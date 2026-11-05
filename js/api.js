@@ -248,8 +248,14 @@ const API = (() => {
 
   const request = async (endpoint, options = {}) => {
     const url = `${CONFIG.API_BASE_URL}${endpoint}`;
+    
+    // Fast 1.5s timeout so browsers never hang on unreachable or mixed-content endpoints
+    const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+    const timeoutId = controller ? setTimeout(() => controller.abort(), 1500) : null;
+
     const opts = {
       ...options,
+      signal: controller ? controller.signal : undefined,
       headers: {
         ...getHeaders(Boolean(options.body)),
         ...(options.headers || {})
@@ -258,6 +264,7 @@ const API = (() => {
 
     try {
       const response = await fetch(url, opts);
+      if (timeoutId) clearTimeout(timeoutId);
       const data = await response.json();
       
       if (!response.ok) {
@@ -265,6 +272,7 @@ const API = (() => {
       }
       return data;
     } catch (err) {
+      if (timeoutId) clearTimeout(timeoutId);
       console.warn(`[API] Remote call to ${endpoint} failed or offline. Using demo fallback:`, err.message);
       return handleFallback(endpoint, options, err);
     }
