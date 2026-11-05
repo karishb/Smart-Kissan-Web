@@ -1,0 +1,13 @@
+{
+  "name": "smartkisan-web",
+  "version": "1.2.1",
+  "description": "SmartKisan Web Platform - Precision Agrarian GIS & Smart Irrigation Command Portal",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "author": "karishma-devs-0",
+  "license": "ISC"
+}
+
