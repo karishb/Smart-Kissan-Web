@@ -4,6 +4,8 @@
  */
 
 const PumpsView = {
+  onPumpUpdate: null,
+
   render() {
     return `
       <div class="page-container">
@@ -59,74 +61,70 @@ const PumpsView = {
             <div class="kpi-info">
               <div class="kpi-label">Energy Consumed</div>
               <div class="kpi-value">12.4 <span style="font-size: 14px; font-weight: 500;">kWh</span></div>
-              <div class="kpi-subtext">Grid & Solar mixed supply</div>
+              <div class="kpi-subtext">Grid & Solar combined</div>
             </div>
           </div>
         </div>
 
-        <!-- Filter Chips Bar -->
+        <!-- Filter Pill Chips -->
         <div style="display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap;">
-          <button type="button" class="map-filter-chip active" data-pfilter="all">All Pumps</button>
-          <button type="button" class="map-filter-chip" data-pfilter="running">Running</button>
+          <button type="button" class="map-filter-chip active" data-pfilter="all">All Pumps (4)</button>
+          <button type="button" class="map-filter-chip" data-pfilter="running">Active Running</button>
           <button type="button" class="map-filter-chip" data-pfilter="standby">Standby</button>
-          <button type="button" class="map-filter-chip" data-pfilter="solar">Solar Pumps</button>
-          <button type="button" class="map-filter-chip" data-pfilter="submersible">Submersibles</button>
+          <button type="button" class="map-filter-chip" data-pfilter="solar">Solar Powered</button>
+          <button type="button" class="map-filter-chip" data-pfilter="submersible">Submersible</button>
         </div>
 
-        <!-- Pumps Grid -->
-        <div class="pumps-grid" id="pumps-full-grid" style="grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));">
+        <!-- Detailed Pumps Grid -->
+        <div class="pumps-grid" id="pumps-full-grid" style="grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));">
           <div style="padding: 40px; text-align: center; color: var(--text-muted); grid-column: 1/-1;">
-            Loading smart pumps...
+            Loading pump hardware controllers...
           </div>
         </div>
-      </div>
 
-      <!-- Add Pump Modal -->
-      <div id="modal-add-pump" class="modal-backdrop" style="display: none;">
-        <div class="modal-card">
-          <div class="modal-header">
-            <h3>Add New Smart Pump</h3>
-            <button type="button" class="btn-close-modal" id="btn-close-add-pump">✕</button>
+        <!-- Modal: Add New Pump -->
+        <div class="modal-backdrop" id="modal-add-pump" style="display: none;">
+          <div class="modal-card">
+            <div class="modal-header">
+              <h3>Connect New Smart Pump Controller</h3>
+              <button type="button" class="btn-close-modal" id="btn-close-add-pump">✕</button>
+            </div>
+            <form id="form-add-pump" style="padding: 24px;">
+              <div class="form-group">
+                <label class="form-label">Pump / Motor Name</label>
+                <input type="text" class="form-input" id="add-pump-name" placeholder="e.g. Tubewell 5 (East Farm)" required />
+              </div>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                <div class="form-group">
+                  <label class="form-label">Motor Type</label>
+                  <select class="form-input" id="add-pump-type">
+                    <option value="submersible">Submersible</option>
+                    <option value="solar">Solar DC Pump</option>
+                    <option value="monoblock">Monoblock</option>
+                    <option value="centrifugal">Centrifugal Drip</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Power Rating (HP)</label>
+                  <input type="number" step="0.5" class="form-input" id="add-pump-hp" value="5.0" required />
+                </div>
+              </div>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                <div class="form-group">
+                  <label class="form-label">Discharge Flow Rate (L/min)</label>
+                  <input type="number" class="form-input" id="add-pump-flow" value="350" required />
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Parcel / Location</label>
+                  <input type="text" class="form-input" id="add-pump-location" placeholder="e.g. North Parcel A" required />
+                </div>
+              </div>
+              <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 10px;">
+                <button type="button" class="btn-outline" style="width: auto; padding: 10px 18px;" onclick="document.getElementById('modal-add-pump').style.display='none'">Cancel</button>
+                <button type="submit" class="btn-primary" style="width: auto; padding: 10px 22px;">Register Pump</button>
+              </div>
+            </form>
           </div>
-          <form id="form-add-pump" style="padding: 20px;">
-            <div class="form-group">
-              <label class="form-label">Pump Identifier / Name *</label>
-              <input type="text" id="add-pump-name" class="form-input" placeholder="e.g. Tubewell 5 (East Farm)" required />
-            </div>
-
-            <div class="form-row">
-              <div class="form-group">
-                <label class="form-label">Pump Type</label>
-                <select id="add-pump-type" class="form-input" style="padding: 10px 14px;">
-                  <option value="submersible">Submersible Tubewell</option>
-                  <option value="solar">Solar Surface Pump</option>
-                  <option value="monoblock">Monoblock Centrifugal</option>
-                  <option value="drip">Drip Booster Pump</option>
-                </select>
-              </div>
-
-              <div class="form-group">
-                <label class="form-label">Power Rating (HP)</label>
-                <input type="number" step="0.5" id="add-pump-hp" class="form-input" placeholder="e.g. 7.5" value="5.0" required />
-              </div>
-            </div>
-
-            <div class="form-row">
-              <div class="form-group">
-                <label class="form-label">Flow Rate (L/min)</label>
-                <input type="number" id="add-pump-flow" class="form-input" placeholder="e.g. 400" value="350" required />
-              </div>
-
-              <div class="form-group">
-                <label class="form-label">Assigned Field Parcel</label>
-                <input type="text" id="add-pump-location" class="form-input" placeholder="e.g. North Parcel A" required />
-              </div>
-            </div>
-
-            <button type="submit" class="btn-primary" style="margin-top: 10px;">
-              <span>Register & Connect Controller</span>
-            </button>
-          </form>
         </div>
       </div>
     `;
@@ -135,6 +133,11 @@ const PumpsView = {
   async mount() {
     await this.loadPumps();
     this.bindModals();
+
+    this.onPumpUpdate = () => {
+      this.loadPumps();
+    };
+    window.addEventListener('pump-status-updated', this.onPumpUpdate);
   },
 
   async loadPumps(filter = 'all') {
@@ -179,14 +182,12 @@ const PumpsView = {
               </div>
               <div class="pump-status-indicator">
                 <span class="status-dot ${isRunning ? 'active' : ''}"></span>
-                <span style="font-size: 12px; font-weight: 700; text-transform: uppercase; color: ${isRunning ? 'var(--success)' : 'var(--text-muted)'};">
-                  ${isRunning ? 'Running' : 'Standby'}
-                </span>
+                <span style="font-size: 13px; font-weight: 600;">${isRunning ? 'Running' : 'Standby'}</span>
               </div>
             </div>
 
-            <!-- Mode Switcher Chips -->
-            <div style="margin-bottom: 14px;">
+            <!-- Operating Mode Selector -->
+            <div style="margin-bottom: 16px;">
               <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 6px;">
                 Operating Mode
               </div>
@@ -256,7 +257,11 @@ const PumpsView = {
           btn.textContent = 'Updating...';
 
           try {
-            await API.pumps.control(pumpId, nextAction);
+            if (window.SmartKisanSocket && typeof window.SmartKisanSocket.sendPumpCommand === 'function') {
+              await window.SmartKisanSocket.sendPumpCommand(pumpId, nextAction);
+            } else {
+              await API.pumps.control(pumpId, nextAction);
+            }
             window.showToast(`Pump switched ${nextAction.toUpperCase()}`, 'success');
             await this.loadPumps(filter);
           } catch (err) {
@@ -337,7 +342,12 @@ const PumpsView = {
     }
   },
 
-  unmount() {}
+  unmount() {
+    if (this.onPumpUpdate) {
+      window.removeEventListener('pump-status-updated', this.onPumpUpdate);
+      this.onPumpUpdate = null;
+    }
+  }
 };
 
 window.PumpsView = PumpsView;

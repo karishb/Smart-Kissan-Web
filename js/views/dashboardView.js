@@ -5,6 +5,8 @@
 const DashboardView = {
   mapInstance: null,
   refreshTimer: null,
+  handlePumpStatus: null,
+  handleTelemetryTick: null,
 
   render() {
     const user = Auth.getUser() || { name: 'Farmer' };
@@ -41,6 +43,18 @@ const DashboardView = {
             <span>Sync Telemetry</span>
           </button>
         </div>
+      </div>
+
+      <!-- AI Precision Advisory Quick Callout Banner -->
+      <div class="ai-dashboard-callout">
+        <div class="ai-callout-content">
+          <div class="ai-callout-icon">🤖</div>
+          <div>
+            <strong>AI Agronomic Advisory:</strong>
+            <span>South Parcel B (Cotton) has reached critical water deficit (-23%). 1 spray window is SAFE today (06:00 - 09:30 AM).</span>
+          </div>
+        </div>
+        <a href="#/ai-advisory" class="btn-ai-callout">View AI Advisory & Water Budget →</a>
       </div>
 
       <!-- Top KPI Stat Cards -->
@@ -151,7 +165,7 @@ const DashboardView = {
             </div>
 
             <div id="soil-parcels-list">
-              <div class="soil-item">
+              <div class="soil-item" data-parcel="f-1">
                 <div class="soil-info">
                   <span>North Parcel A (Wheat)</span>
                   <span style="color: var(--primary);">68% • Optimal</span>
@@ -161,7 +175,7 @@ const DashboardView = {
                 </div>
               </div>
 
-              <div class="soil-item">
+              <div class="soil-item" data-parcel="f-2">
                 <div class="soil-info">
                   <span>Polyhouse 1 (Bell Pepper)</span>
                   <span style="color: var(--primary);">72% • Optimal</span>
@@ -171,7 +185,7 @@ const DashboardView = {
                 </div>
               </div>
 
-              <div class="soil-item">
+              <div class="soil-item" data-parcel="f-3">
                 <div class="soil-info">
                   <span>South Parcel B (Cotton)</span>
                   <span style="color: var(--warning);">42% • Needs Water</span>
@@ -181,7 +195,7 @@ const DashboardView = {
                 </div>
               </div>
 
-              <div class="soil-item">
+              <div class="soil-item" data-parcel="f-4">
                 <div class="soil-info">
                   <span>East Parcel C (Tomato)</span>
                   <span style="color: var(--primary);">60% • Optimal</span>
@@ -222,14 +236,14 @@ const DashboardView = {
                 <div class="activity-icon-badge pump-on">🤖</div>
                 <div class="activity-content">
                   <div class="activity-msg">Drip Pump 4 adjusted by AI Soil Engine</div>
-                  <div class="activity-time">Yesterday, 18:30 PM IST • Flow: 220 L/min</div>
+                  <div class="activity-time">Today, Flow: 220 L/min • Pulse active</div>
                 </div>
               </li>
               <li class="activity-item">
                 <div class="activity-icon-badge pump-off">🛑</div>
                 <div class="activity-content">
-                  <div class="activity-msg">Borewell 3 shut down automatically</div>
-                  <div class="activity-time">Yesterday, 16:00 PM IST • Moisture threshold reached</div>
+                  <div class="activity-msg">Borewell 3 standby</div>
+                  <div class="activity-time">Moisture threshold ready • South Field</div>
                 </div>
               </li>
             </ul>
@@ -257,24 +271,72 @@ const DashboardView = {
       });
     }
 
+    // Real-Time Socket Event Listeners
+    this.handlePumpStatus = (e) => {
+      const detail = e.detail || {};
+      const { pumpId, status } = detail;
+      const card = document.querySelector(`.pump-card[data-pump-id="${pumpId}"]`);
+      if (card) {
+        const isRunning = status === 'on';
+        if (isRunning) {
+          card.classList.add('running');
+        } else {
+          card.classList.remove('running');
+        }
+        const dot = card.querySelector('.status-dot');
+        if (dot) dot.className = `status-dot ${isRunning ? 'active' : ''}`;
+        const label = card.querySelector('.pump-status-indicator span:last-child');
+        if (label) label.textContent = isRunning ? 'Running' : 'Standby';
+        const btn = card.querySelector('.btn-toggle-pump');
+        if (btn) {
+          btn.className = `btn-toggle-pump ${isRunning ? 'turn-off' : 'turn-on'}`;
+          btn.setAttribute('data-next-action', isRunning ? 'off' : 'on');
+          btn.innerHTML = `<span>${isRunning ? 'Turn Off' : 'Turn On'}</span>`;
+        }
+      }
+      this.refreshKPICounts();
+    };
+
+    this.handleTelemetryTick = (e) => {
+      const { totalToday } = e.detail || {};
+      const waterTodayEl = document.getElementById('kpi-water-today');
+      if (waterTodayEl && totalToday) {
+        waterTodayEl.innerHTML = `${totalToday.toLocaleString()} <span style="font-size: 14px; font-weight: 500;">L</span>`;
+      }
+    };
+
+    window.addEventListener('pump-status-updated', this.handlePumpStatus);
+    window.addEventListener('telemetry-tick', this.handleTelemetryTick);
+
     // Auto sync every 30 seconds
     this.refreshTimer = setInterval(() => {
       this.loadDashboardData(true);
     }, 30000);
   },
 
+  refreshKPICounts() {
+    const runningCards = document.querySelectorAll('.pump-card.running').length;
+    const totalCards = document.querySelectorAll('.pump-card').length;
+    const activeEl = document.getElementById('kpi-active-pumps');
+    if (activeEl) {
+      activeEl.textContent = `${runningCards} / ${totalCards || 4}`;
+    }
+    const onlineCountEl = document.getElementById('pumps-online-count');
+    if (onlineCountEl) {
+      onlineCountEl.textContent = `${runningCards} Running • ${totalCards || 4} Connected`;
+    }
+  },
+
   initMap() {
     const mapEl = document.getElementById('dashboard-map');
     if (!mapEl) return;
 
-    // Use Leaflet if loaded via CDN, or graceful fallback
     if (typeof L !== 'undefined') {
       try {
         if (this.mapInstance) {
           this.mapInstance.remove();
         }
 
-        // Center near agrarian belt (e.g. Punjab/Haryana/Delhi)
         const farmCoords = [30.9010, 75.8573]; 
         const map = L.map('dashboard-map', {
           zoomControl: true,
@@ -331,18 +393,25 @@ const DashboardView = {
           }).addTo(map).bindPopup(`<strong>${p.name}</strong><br/>Live Soil Moisture: Optimal`);
         });
 
-        // Pump Markers
-        const pumpIcon = L.divIcon({
+        // Animated Pump Markers
+        const activePumpIcon = L.divIcon({
+          className: 'custom-pump-marker active-pulse',
+          html: '<div style="background:#2E7D32;color:white;border:2px solid white;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;box-shadow:0 0 10px rgba(46,125,50,0.8);font-size:13px;">⚡</div>',
+          iconSize: [28, 28],
+          iconAnchor: [14, 14]
+        });
+
+        const standbyPumpIcon = L.divIcon({
           className: 'custom-pump-marker',
-          html: '<div style="background:#2E7D32;color:white;border:2px solid white;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,0.4);font-size:12px;">⚡</div>',
+          html: '<div style="background:#6B7280;color:white;border:2px solid white;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,0.4);font-size:12px;">⚡</div>',
           iconSize: [26, 26],
           iconAnchor: [13, 13]
         });
 
-        L.marker([30.9035, 75.8580], { icon: pumpIcon }).addTo(map)
-          .bindPopup('<strong>Tubewell 1 (Active)</strong><br/>Power: 7.5 HP<br/>Mode: Schedule');
+        L.marker([30.9035, 75.8580], { icon: activePumpIcon }).addTo(map)
+          .bindPopup('<strong>Tubewell 1 (Active)</strong><br/>Power: 7.5 HP<br/>Mode: Schedule<br/><span style="color:#2E7D32;font-weight:600;">● Live Pumping (450 L/min)</span>');
 
-        L.marker([30.9010, 75.8565], { icon: pumpIcon }).addTo(map)
+        L.marker([30.9010, 75.8565], { icon: standbyPumpIcon }).addTo(map)
           .bindPopup('<strong>Solar Pump 2 (Standby)</strong><br/>Power: 5.0 HP<br/>Mode: Auto');
 
         this.mapInstance = map;
@@ -362,7 +431,6 @@ const DashboardView = {
 
   async loadDashboardData(silent = false) {
     try {
-      // Fetch pumps and summary
       const [pumpsRes, summaryRes] = await Promise.all([
         API.pumps.getAll(),
         API.pumps.getTodaySummary()
@@ -464,7 +532,7 @@ const DashboardView = {
 
     // Attach Toggle Action Event Listeners
     container.querySelectorAll('.btn-toggle-pump').forEach(btn => {
-      btn.addEventListener('click', async (e) => {
+      btn.addEventListener('click', async () => {
         const pumpId = btn.getAttribute('data-id');
         const nextAction = btn.getAttribute('data-next-action');
 
@@ -472,10 +540,13 @@ const DashboardView = {
           btn.disabled = true;
           btn.textContent = 'Updating...';
 
-          await API.pumps.control(pumpId, nextAction);
-          window.showToast(`Command sent: Pump switched ${nextAction.toUpperCase()}`, 'success');
+          if (window.SmartKisanSocket && typeof window.SmartKisanSocket.sendPumpCommand === 'function') {
+            await window.SmartKisanSocket.sendPumpCommand(pumpId, nextAction);
+          } else {
+            await API.pumps.control(pumpId, nextAction);
+          }
           
-          // Re-fetch data to reflect state
+          window.showToast(`Command sent: Pump switched ${nextAction.toUpperCase()}`, 'success');
           await this.loadDashboardData();
         } catch (err) {
           window.showToast(`Failed to switch pump: ${err.message}`, 'error');
@@ -496,6 +567,14 @@ const DashboardView = {
     if (this.refreshTimer) {
       clearInterval(this.refreshTimer);
       this.refreshTimer = null;
+    }
+    if (this.handlePumpStatus) {
+      window.removeEventListener('pump-status-updated', this.handlePumpStatus);
+      this.handlePumpStatus = null;
+    }
+    if (this.handleTelemetryTick) {
+      window.removeEventListener('telemetry-tick', this.handleTelemetryTick);
+      this.handleTelemetryTick = null;
     }
   }
 };

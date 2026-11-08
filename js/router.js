@@ -14,6 +14,7 @@ const Router = (() => {
     '#/fields': { view: FieldsView, isProtected: true },
     '#/schedules': { view: SchedulesView, isProtected: true },
     '#/sensors': { view: SensorsView, isProtected: true },
+    '#/ai-advisory': { view: AiAdvisoryView, isProtected: true },
     '#/reports': { view: ReportsView, isProtected: true }
   };
 

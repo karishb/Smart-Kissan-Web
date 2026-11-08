@@ -78,6 +78,12 @@ const App = (() => {
             </a>
           </li>
           <li>
+            <a href="#/ai-advisory" class="nav-link">
+              <span>🤖</span>
+              <span>${I18N.t('aiAdvisory')}</span>
+            </a>
+          </li>
+          <li>
             <a href="#/reports" class="nav-link">
               <span>📑</span>
               <span>${I18N.t('reports')}</span>

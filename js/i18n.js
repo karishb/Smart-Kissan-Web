@@ -14,6 +14,7 @@ const I18N = (() => {
       fields: 'Farm GIS & Crops',
       schedules: 'Irrigation Schedules',
       sensors: 'IoT Probes',
+      aiAdvisory: 'AI Advisory',
       reports: 'DSR & Reports',
       login: 'Sign In',
       register: 'Register Farm',
@@ -41,7 +42,14 @@ const I18N = (() => {
       addField: 'Add Parcel',
       addPump: 'Add Pump',
       exportExcel: 'Export Excel Report',
-      printReport: 'Print Report'
+      printReport: 'Print Report',
+      evapotranspiration: 'Evapotranspiration (ET)',
+      waterBudget: 'Water Budget',
+      sprayPlanner: '7-Day Spraying Planner',
+      overrides: 'AI Overrides',
+      safe: 'Safe Window',
+      marginal: 'Marginal',
+      unsafe: 'Unsafe'
     },
     hi: {
       appName: 'स्मार्ट किसान',
@@ -51,6 +59,7 @@ const I18N = (() => {
       fields: 'खेत और फसलें',
       schedules: 'सिंचाई समय-सारणी',
       sensors: 'सेंसर एवं जांच',
+      aiAdvisory: 'एआई कृषि सलाह',
       reports: 'रिपोर्ट एवं डीएसआर',
       login: 'लॉग इन करें',
       register: 'फार्म पंजीकृत करें',
@@ -78,7 +87,14 @@ const I18N = (() => {
       addField: 'नया खेत जोड़ें',
       addPump: 'नया पंप जोड़ें',
       exportExcel: 'एक्सेल रिपोर्ट डाउनलोड करें',
-      printReport: 'प्रिंट रिपोर्ट'
+      printReport: 'प्रिंट रिपोर्ट',
+      evapotranspiration: 'वाष्पोत्सर्जन (ET)',
+      waterBudget: 'जल बजट',
+      sprayPlanner: '7-दिवसीय छिड़काव योजना',
+      overrides: 'एआई नियंत्रण',
+      safe: 'सुरक्षित समय',
+      marginal: 'सावधानीपूर्वक',
+      unsafe: 'असुरक्षित'
     }
   };
 
