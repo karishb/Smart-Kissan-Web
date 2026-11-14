@@ -31,11 +31,11 @@ const DashboardView = {
         </div>
 
         <div class="header-actions">
-          <div class="weather-badge">
+          <div class="weather-badge" id="dash-weather-badge">
             <span>☀️</span>
             <span>Ludhiana, PB:</span>
-            <span class="temp">29°C</span>
-            <span style="color: var(--text-muted); font-size: 11px;">(Humidity 48%)</span>
+            <span class="temp">28.8°C</span>
+            <span style="color: var(--text-muted); font-size: 11px;">(Humidity 42%)</span>
           </div>
 
           <button type="button" class="btn-refresh" id="btn-sync-telemetry">
@@ -258,6 +258,7 @@ const DashboardView = {
   async mount() {
     this.initMap();
     await this.loadDashboardData();
+    await this.loadLiveWeather();
 
     // Refresh telemetry button
     const syncBtn = document.getElementById('btn-sync-telemetry');
@@ -265,9 +266,12 @@ const DashboardView = {
     if (syncBtn) {
       syncBtn.addEventListener('click', async () => {
         if (syncIcon) syncIcon.style.animation = 'spin 1s linear infinite';
-        await this.loadDashboardData();
+        await Promise.all([
+          this.loadDashboardData(),
+          this.loadLiveWeather(true)
+        ]);
         if (syncIcon) syncIcon.style.animation = '';
-        window.showToast('Farm telemetry and pump status synchronized.', 'success');
+        window.showToast('Farm telemetry, pump status, and agromet data synchronized.', 'success');
       });
     }
 
@@ -312,6 +316,23 @@ const DashboardView = {
     this.refreshTimer = setInterval(() => {
       this.loadDashboardData(true);
     }, 30000);
+  },
+
+  async loadLiveWeather(forceRefresh = false) {
+    if (!window.WeatherService) return;
+    try {
+      const weather = await window.WeatherService.fetchAgroWeather(forceRefresh);
+      const badge = document.getElementById('dash-weather-badge');
+      if (badge && weather.current) {
+        const { temp, humidity } = weather.current;
+        badge.innerHTML = `
+          <span>☀️</span>
+          <span>${weather.location || 'Ludhiana, PB'}:</span>
+          <span class="temp">${temp}°C</span>
+          <span style="color: var(--text-muted); font-size: 11px;">(Humidity ${humidity}%)</span>
+        `;
+      }
+    } catch (e) {}
   },
 
   refreshKPICounts() {

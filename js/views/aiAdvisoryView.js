@@ -1,19 +1,21 @@
 /**
  * SmartKisan Web Platform - AI Irrigation & Precision Advisory Module
  * Route: #/ai-advisory
- * Penman-Monteith Evapotranspiration (ET0), Crop Water Budget & 7-Day Precision Agrochemical Spraying Planner
+ * Live Open-Meteo Satellite Agromet Telemetry,
+ * FAO-56 Penman-Monteith Evapotranspiration (ET0), Crop Water Budget & 7-Day Precision Agrochemical Spraying Planner
  */
 
 const AiAdvisoryView = {
   activeTab: 'budget', // 'budget' | 'spray' | 'overrides'
   recInterval: null,
+  isLiveFeed: false,
 
   // Agronomic data models
   farmMetrics: {
-    tempC: 29.4,
-    humidityPct: 46,
-    windKmh: 8.6,
-    solarRad: 19.4, // MJ/m2/day
+    tempC: 28.5,
+    humidityPct: 42,
+    windKmh: 7.2,
+    solarRad: 19.2, // MJ/m2/day
     et0: 4.85,      // mm/day
     totalAcres: 18.5
   },
@@ -85,88 +87,13 @@ const AiAdvisoryView = {
     }
   ],
 
-  sprayPlanner: [
-    {
-      day: 'Today (Sun)',
-      date: '08 Nov',
-      temp: '29°C',
-      humidity: '46%',
-      wind: '8 km/h',
-      rain: '5%',
-      status: 'safe',
-      window: '06:00 AM - 09:30 AM',
-      note: 'Optimal conditions for foliar nutrient sprays. Zero drift risk.'
-    },
-    {
-      day: 'Monday',
-      date: '09 Nov',
-      temp: '31°C',
-      humidity: '42%',
-      wind: '12 km/h',
-      rain: '10%',
-      status: 'marginal',
-      window: '06:00 AM - 08:00 AM Only',
-      note: 'Wind increases after 09:00 AM. Use low-drift air induction nozzles.'
-    },
-    {
-      day: 'Tuesday',
-      date: '10 Nov',
-      temp: '27°C',
-      humidity: '78%',
-      wind: '22 km/h',
-      rain: '65%',
-      status: 'unsafe',
-      window: 'Do Not Spray',
-      note: 'High wind gusts and imminent rainfall. Severe pesticide wash-off hazard!'
-    },
-    {
-      day: 'Wednesday',
-      date: '11 Nov',
-      temp: '26°C',
-      humidity: '82%',
-      wind: '18 km/h',
-      rain: '45%',
-      status: 'unsafe',
-      window: 'Do Not Spray',
-      note: 'Wet canopy conditions. High fungal spore activity; wait for dry foliage.'
-    },
-    {
-      day: 'Thursday',
-      date: '12 Nov',
-      temp: '28°C',
-      humidity: '55%',
-      wind: '9 km/h',
-      rain: '15%',
-      status: 'safe',
-      window: '06:30 AM - 10:30 AM',
-      note: 'Ideal window for post-rain systemic fungicide application.'
-    },
-    {
-      day: 'Friday',
-      date: '13 Nov',
-      temp: '29°C',
-      humidity: '50%',
-      wind: '10 km/h',
-      rain: '10%',
-      status: 'safe',
-      window: '06:00 AM - 10:00 AM',
-      note: 'Favorable calm winds. Suitable for insecticide & biostimulants.'
-    },
-    {
-      day: 'Saturday',
-      date: '14 Nov',
-      temp: '30°C',
-      humidity: '48%',
-      wind: '14 km/h',
-      rain: '20%',
-      status: 'marginal',
-      window: '06:00 AM - 08:30 AM',
-      note: 'Moderate breeze. Calibrate spray boom height to 50cm above canopy.'
-    }
-  ],
+  sprayPlanner: [],
 
   render() {
     const { tempC, humidityPct, windKmh, solarRad, et0, totalAcres } = this.farmMetrics;
+    const statusText = this.isLiveFeed 
+      ? '🟢 Open-Meteo Satellite Feed Active (Ludhiana, PB)' 
+      : '🟡 Agromet Baseline Feed Active';
 
     return `
       <div class="page-container">
@@ -176,19 +103,19 @@ const AiAdvisoryView = {
           <div>
             <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
               <span class="ai-chip-pill">🧠 AI Agronomic Engine v2.4</span>
-              <span class="ai-status-online">● Real-Time Model Active</span>
+              <span class="ai-status-online" id="ai-feed-status">${statusText}</span>
             </div>
             <h1 class="welcome-title">
               <span>🌾 Precision AI Irrigation & Agronomic Advisory</span>
             </h1>
             <p class="welcome-subtitle">
-              FAO-56 Penman-Monteith Evapotranspiration ($ET_0$), Crop Water Budgeting & 7-Day Precision Spraying Feasibility
+              Live FAO-56 Penman-Monteith Evapotranspiration ($ET_0$), Crop Water Budgeting & 7-Day Precision Spraying Feasibility
             </p>
           </div>
 
           <div class="header-actions">
             <button type="button" class="btn-refresh" id="btn-recalculate-ai">
-              <span>⚡</span>
+              <span id="recalc-spin-icon">⚡</span>
               <span>Recalculate AI Model</span>
             </button>
           </div>
@@ -224,14 +151,14 @@ const AiAdvisoryView = {
             <div class="strip-icon">☀️</div>
             <div>
               <div class="strip-label">Solar Radiation</div>
-              <div class="strip-val">${solarRad} <span style="font-size:11px;">MJ/m²/d</span></div>
+              <div class="strip-val" id="strip-solar">${solarRad} <span style="font-size:11px;">MJ/m²/d</span></div>
             </div>
           </div>
 
           <div class="weather-strip-item highlight-et">
             <div class="strip-icon">📈</div>
             <div>
-              <div class="strip-label">Reference $ET_0$</div>
+              <div class="strip-label">Reference $ET_0$ (FAO-56)</div>
               <div class="strip-val" id="strip-et0">${et0} <span style="font-size:12px;">mm/day</span></div>
             </div>
           </div>
@@ -261,7 +188,7 @@ const AiAdvisoryView = {
             <div style="font-size: 24px;">📐</div>
             <div>
               <strong>FAO-56 Penman-Monteith Evapotranspiration Formula:</strong>
-              <div class="formula-code">
+              <div class="formula-code" id="formula-display">
                 Crop Water Requirement (ET_c) = Reference Evapotranspiration (ET_0: ${et0} mm) × Crop Coefficient (K_c)
               </div>
               <span style="font-size: 12px; color: var(--text-muted);">
@@ -271,91 +198,8 @@ const AiAdvisoryView = {
           </div>
 
           <!-- Parcel Water Demand Grid -->
-          <div class="advisory-grid">
-            ${this.parcels.map(p => {
-              const etcMm = (this.farmMetrics.et0 * p.kc).toFixed(2);
-              const litresPerAcre = Math.round(etcMm * 4046.86); // 1 mm = 10,000 L/ha = ~4,046.86 L/acre
-              const totalLitresParcel = Math.round(litresPerAcre * p.areaAcres);
-              const isCrit = p.status === 'critical';
-              const isOpt = p.status === 'optimal';
-              const isSkip = p.status === 'skip';
-
-              let badgeColor = isCrit ? 'danger' : (isOpt ? 'success' : 'warning');
-              let badgeText = isCrit ? '🚨 Water Deficit Alert' : (isOpt ? '✅ Hydration Balanced' : '⚠️ Cycle Skip Recommended');
-
-              return `
-                <div class="advisory-card ${isCrit ? 'pulse-border' : ''}">
-                  <div class="advisory-card-header">
-                    <div>
-                      <h3 class="advisory-parcel-title">${p.name}</h3>
-                      <div class="advisory-crop-subtitle">${p.crop} • Stage: <strong>${p.stage}</strong></div>
-                    </div>
-                    <span class="advisory-badge ${badgeColor}">${badgeText}</span>
-                  </div>
-
-                  <div class="advisory-metrics-row">
-                    <div class="metric-box">
-                      <div class="metric-lbl">Crop Coeff ($K_c$)</div>
-                      <div class="metric-num">${p.kc}</div>
-                    </div>
-                    <div class="metric-box">
-                      <div class="metric-lbl">Daily $ET_c$</div>
-                      <div class="metric-num">${etcMm} <span style="font-size:11px;">mm/d</span></div>
-                    </div>
-                    <div class="metric-box">
-                      <div class="metric-lbl">Water Need / Acre</div>
-                      <div class="metric-num">${litresPerAcre.toLocaleString()} <span style="font-size:11px;">L</span></div>
-                    </div>
-                    <div class="metric-box">
-                      <div class="metric-lbl">Total Parcel Need</div>
-                      <div class="metric-num highlight">${totalLitresParcel.toLocaleString()} <span style="font-size:11px;">L</span></div>
-                    </div>
-                  </div>
-
-                  <!-- Soil Moisture Progress Meter -->
-                  <div class="soil-bar-container">
-                    <div class="soil-bar-meta">
-                      <span>Soil Moisture: <strong>${p.moistureCurrent}%</strong> (Target: ${p.moistureTarget}%)</span>
-                      <span style="font-weight: 600; color: ${isCrit ? 'var(--danger)' : 'var(--primary)'};">
-                        ${isCrit ? 'Needs Water' : 'Optimal'}
-                      </span>
-                    </div>
-                    <div class="progress-bar-bg" style="height: 10px;">
-                      <div class="progress-bar-fill ${isCrit ? 'low' : 'optimal'}" style="width: ${p.moistureCurrent}%;"></div>
-                    </div>
-                  </div>
-
-                  <div class="ai-recommendation-box ${isCrit ? 'crit-box' : ''}">
-                    <div style="display:flex; align-items:center; gap:8px; margin-bottom: 4px;">
-                      <span style="font-size: 15px;">🤖</span>
-                      <strong>AI Agronomist Action:</strong>
-                    </div>
-                    <p class="rec-text">${p.recommendation}</p>
-                    <div class="loss-avoidance">💡 <em>${p.lossAvoidance}</em></div>
-                  </div>
-
-                  <div class="advisory-actions-row">
-                    <button 
-                      type="button" 
-                      class="btn-ai-action ${isCrit ? 'btn-primary' : 'btn-outline'}"
-                      data-action="${isCrit ? 'run_now' : 'schedule'}"
-                      data-parcel-id="${p.id}"
-                      data-pump-id="${p.pumpId}"
-                    >
-                      ${isCrit ? '⚡ Run Pump Now (55 min)' : '📅 Schedule Morning Cycle'}
-                    </button>
-                    
-                    <button 
-                      type="button" 
-                      class="btn-text-action"
-                      onclick="window.showToast('Sensor threshold calibrated for ${p.name}', 'info')"
-                    >
-                      ⚙️ Calibrate
-                    </button>
-                  </div>
-                </div>
-              `;
-            }).join('')}
+          <div class="advisory-grid" id="advisory-parcels-container">
+            ${this.renderParcelsHtml()}
           </div>
 
         </div>
@@ -381,53 +225,8 @@ const AiAdvisoryView = {
           </div>
 
           <!-- 7-Day Spray Table / Cards -->
-          <div class="spray-cards-grid">
-            ${this.sprayPlanner.map(item => {
-              const isSafe = item.status === 'safe';
-              const isMarginal = item.status === 'marginal';
-              const isUnsafe = item.status === 'unsafe';
-
-              const badgeClass = isSafe ? 'spray-safe' : (isMarginal ? 'spray-marginal' : 'spray-unsafe');
-              const statusLabel = isSafe ? 'SAFE WINDOW' : (isMarginal ? 'MARGINAL' : 'UNSAFE TO SPRAY');
-
-              return `
-                <div class="spray-card ${badgeClass}">
-                  <div class="spray-card-header">
-                    <div>
-                      <div class="spray-day">${item.day}</div>
-                      <div class="spray-date">${item.date}</div>
-                    </div>
-                    <span class="spray-badge-pill ${badgeClass}">${statusLabel}</span>
-                  </div>
-
-                  <div class="spray-conditions">
-                    <div class="cond-item">
-                      <span class="cond-icon">🌡️</span>
-                      <span>${item.temp}</span>
-                    </div>
-                    <div class="cond-item">
-                      <span class="cond-icon">💧</span>
-                      <span>RH ${item.humidity}</span>
-                    </div>
-                    <div class="cond-item">
-                      <span class="cond-icon">🍃</span>
-                      <span>${item.wind}</span>
-                    </div>
-                    <div class="cond-item">
-                      <span class="cond-icon">🌧️</span>
-                      <span>Rain ${item.rain}</span>
-                    </div>
-                  </div>
-
-                  <div class="spray-window-box">
-                    <strong>Recommended Time:</strong>
-                    <div class="window-time">${item.window}</div>
-                  </div>
-
-                  <p class="spray-note">${item.note}</p>
-                </div>
-              `;
-            }).join('')}
+          <div class="spray-cards-grid" id="spray-cards-container">
+            ${this.renderSprayHtml()}
           </div>
 
           <!-- Agrochemical Best Practices Callout -->
@@ -436,7 +235,7 @@ const AiAdvisoryView = {
             <div>
               <strong>Precision Agrochemical & Drift Management Best Practices:</strong>
               <ul class="spray-rules-list">
-                <li><strong>Optimal Wind Range:</strong> Apply sprays only when wind speed is between 3.5 km/h and 12 km/h. Calm conditions (< 3 km/h) risk thermal temperature inversions; winds > 15 km/h cause chemical drift onto neighboring plots.</li>
+                <li><strong>Optimal Wind Range:</strong> Apply sprays only when wind speed is between 3.5 km/h and 12 km/h. Calm conditions (&lt; 3 km/h) risk thermal temperature inversions; winds &gt; 15 km/h cause chemical drift onto neighboring plots.</li>
                 <li><strong>Rainfastness Window:</strong> Ensure at least 3 hours without precipitation after foliar application for systemic pesticide uptake.</li>
                 <li><strong>Nozzle Selection:</strong> Use air-induction coarse droplet nozzles (250 - 400 microns) to reduce drift fines by up to 80%.</li>
               </ul>
@@ -506,9 +305,201 @@ const AiAdvisoryView = {
     `;
   },
 
-  mount() {
+  renderParcelsHtml() {
+    return this.parcels.map(p => {
+      const etcMm = (this.farmMetrics.et0 * p.kc).toFixed(2);
+      const litresPerAcre = Math.round(etcMm * 4046.86);
+      const totalLitresParcel = Math.round(litresPerAcre * p.areaAcres);
+      const isCrit = p.status === 'critical';
+      const isOpt = p.status === 'optimal';
+
+      let badgeColor = isCrit ? 'danger' : (isOpt ? 'success' : 'warning');
+      let badgeText = isCrit ? '🚨 Water Deficit Alert' : (isOpt ? '✅ Hydration Balanced' : '⚠️ Cycle Skip Recommended');
+
+      return `
+        <div class="advisory-card ${isCrit ? 'pulse-border' : ''}">
+          <div class="advisory-card-header">
+            <div>
+              <h3 class="advisory-parcel-title">${p.name}</h3>
+              <div class="advisory-crop-subtitle">${p.crop} • Stage: <strong>${p.stage}</strong></div>
+            </div>
+            <span class="advisory-badge ${badgeColor}">${badgeText}</span>
+          </div>
+
+          <div class="advisory-metrics-row">
+            <div class="metric-box">
+              <div class="metric-lbl">Crop Coeff ($K_c$)</div>
+              <div class="metric-num">${p.kc}</div>
+            </div>
+            <div class="metric-box">
+              <div class="metric-lbl">Daily $ET_c$</div>
+              <div class="metric-num">${etcMm} <span style="font-size:11px;">mm/d</span></div>
+            </div>
+            <div class="metric-box">
+              <div class="metric-lbl">Water Need / Acre</div>
+              <div class="metric-num">${litresPerAcre.toLocaleString()} <span style="font-size:11px;">L</span></div>
+            </div>
+            <div class="metric-box">
+              <div class="metric-lbl">Total Parcel Need</div>
+              <div class="metric-num highlight">${totalLitresParcel.toLocaleString()} <span style="font-size:11px;">L</span></div>
+            </div>
+          </div>
+
+          <!-- Soil Moisture Progress Meter -->
+          <div class="soil-bar-container">
+            <div class="soil-bar-meta">
+              <span>Soil Moisture: <strong>${p.moistureCurrent}%</strong> (Target: ${p.moistureTarget}%)</span>
+              <span style="font-weight: 600; color: ${isCrit ? 'var(--danger)' : 'var(--primary)'};">
+                ${isCrit ? 'Needs Water' : 'Optimal'}
+              </span>
+            </div>
+            <div class="progress-bar-bg" style="height: 10px;">
+              <div class="progress-bar-fill ${isCrit ? 'low' : 'optimal'}" style="width: ${p.moistureCurrent}%;"></div>
+            </div>
+          </div>
+
+          <div class="ai-recommendation-box ${isCrit ? 'crit-box' : ''}">
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom: 4px;">
+              <span style="font-size: 15px;">🤖</span>
+              <strong>AI Agronomist Action:</strong>
+            </div>
+            <p class="rec-text">${p.recommendation}</p>
+            <div class="loss-avoidance">💡 <em>${p.lossAvoidance}</em></div>
+          </div>
+
+          <div class="advisory-actions-row">
+            <button 
+              type="button" 
+              class="btn-ai-action ${isCrit ? 'btn-primary' : 'btn-outline'}"
+              data-action="${isCrit ? 'run_now' : 'schedule'}"
+              data-parcel-id="${p.id}"
+              data-pump-id="${p.pumpId}"
+            >
+              ${isCrit ? '⚡ Run Pump Now (55 min)' : '📅 Schedule Morning Cycle'}
+            </button>
+            
+            <button 
+              type="button" 
+              class="btn-text-action"
+              onclick="window.showToast('Sensor threshold calibrated for ${p.name}', 'info')"
+            >
+              ⚙️ Calibrate
+            </button>
+          </div>
+        </div>
+      `;
+    }).join('');
+  },
+
+  renderSprayHtml() {
+    const list = (this.sprayPlanner && this.sprayPlanner.length > 0) 
+      ? this.sprayPlanner 
+      : WeatherService.getFallbackData().daily;
+
+    return list.map(item => {
+      const isSafe = item.status === 'safe';
+      const isMarginal = item.status === 'marginal';
+
+      const badgeClass = isSafe ? 'spray-safe' : (isMarginal ? 'spray-marginal' : 'spray-unsafe');
+      const statusLabel = isSafe ? 'SAFE WINDOW' : (isMarginal ? 'MARGINAL' : 'UNSAFE TO SPRAY');
+
+      return `
+        <div class="spray-card ${badgeClass}">
+          <div class="spray-card-header">
+            <div>
+              <div class="spray-day">${item.day}</div>
+              <div class="spray-date">${item.date}</div>
+            </div>
+            <span class="spray-badge-pill ${badgeClass}">${statusLabel}</span>
+          </div>
+
+          <div class="spray-conditions">
+            <div class="cond-item">
+              <span class="cond-icon">🌡️</span>
+              <span>${item.temp}</span>
+            </div>
+            <div class="cond-item">
+              <span class="cond-icon">💧</span>
+              <span>RH ${item.humidity}</span>
+            </div>
+            <div class="cond-item">
+              <span class="cond-icon">🍃</span>
+              <span>${item.wind}</span>
+            </div>
+            <div class="cond-item">
+              <span class="cond-icon">🌧️</span>
+              <span>Rain ${item.rain}</span>
+            </div>
+          </div>
+
+          <div class="spray-window-box">
+            <strong>Recommended Time:</strong>
+            <div class="window-time">${item.window}</div>
+          </div>
+
+          <p class="spray-note">${item.note}</p>
+        </div>
+      `;
+    }).join('');
+  },
+
+  async mount() {
     this.bindTabs();
     this.bindActions();
+    await this.loadLiveWeather();
+  },
+
+  async loadLiveWeather(forceRefresh = false) {
+    if (!window.WeatherService) return;
+
+    try {
+      const weather = await window.WeatherService.fetchAgroWeather(forceRefresh);
+      if (weather && weather.current) {
+        this.isLiveFeed = weather.isLive;
+        this.farmMetrics.tempC = weather.current.temp;
+        this.farmMetrics.humidityPct = weather.current.humidity;
+        this.farmMetrics.windKmh = weather.current.windSpeed;
+        this.farmMetrics.et0 = weather.current.et0;
+        this.farmMetrics.solarRad = weather.current.solarRadiation || 19.2;
+        this.sprayPlanner = weather.daily || [];
+
+        // Update DOM elements cleanly
+        const statusEl = document.getElementById('ai-feed-status');
+        if (statusEl) {
+          statusEl.textContent = weather.isLive 
+            ? '🟢 Live Open-Meteo Satellite Feed (Ludhiana, PB)' 
+            : '🟡 Agromet Baseline Feed Active';
+        }
+
+        const tempEl = document.getElementById('strip-temp');
+        const rhEl = document.getElementById('strip-rh');
+        const windEl = document.getElementById('strip-wind');
+        const solarEl = document.getElementById('strip-solar');
+        const et0El = document.getElementById('strip-et0');
+        const formulaEl = document.getElementById('formula-display');
+
+        if (tempEl) tempEl.textContent = `${this.farmMetrics.tempC}°C`;
+        if (rhEl) rhEl.textContent = `${this.farmMetrics.humidityPct}%`;
+        if (windEl) windEl.textContent = `${this.farmMetrics.windKmh} km/h`;
+        if (solarEl) solarEl.innerHTML = `${this.farmMetrics.solarRad} <span style="font-size:11px;">MJ/m²/d</span>`;
+        if (et0El) et0El.innerHTML = `${this.farmMetrics.et0} <span style="font-size:12px;">mm/day</span>`;
+        if (formulaEl) {
+          formulaEl.textContent = `Crop Water Requirement (ET_c) = Reference Evapotranspiration (ET_0: ${this.farmMetrics.et0} mm) × Crop Coefficient (K_c)`;
+        }
+
+        // Re-render dynamic parcel cards and spray planner cards
+        const parcelsCont = document.getElementById('advisory-parcels-container');
+        if (parcelsCont) parcelsCont.innerHTML = this.renderParcelsHtml();
+
+        const sprayCont = document.getElementById('spray-cards-container');
+        if (sprayCont) sprayCont.innerHTML = this.renderSprayHtml();
+
+        // Re-attach card button listeners
+        this.bindCardActions();
+      }
+    } catch (err) {
+      console.warn('AiAdvisoryView live weather load error:', err);
+    }
   },
 
   bindTabs() {
@@ -523,51 +514,22 @@ const AiAdvisoryView = {
         btn.classList.add('active');
 
         // Toggle panes
-        document.getElementById('pane-budget').style.display = target === 'budget' ? 'block' : 'none';
-        document.getElementById('pane-spray').style.display = target === 'spray' ? 'block' : 'none';
-        document.getElementById('pane-overrides').style.display = target === 'overrides' ? 'block' : 'none';
+        const pBudget = document.getElementById('pane-budget');
+        const pSpray = document.getElementById('pane-spray');
+        const pOverrides = document.getElementById('pane-overrides');
+
+        if (pBudget) pBudget.style.display = target === 'budget' ? 'block' : 'none';
+        if (pSpray) pSpray.style.display = target === 'spray' ? 'block' : 'none';
+        if (pOverrides) pOverrides.style.display = target === 'overrides' ? 'block' : 'none';
       });
     });
   },
 
-  bindActions() {
-    // Recalculate AI Model Button
-    const recalcBtn = document.getElementById('btn-recalculate-ai');
-    if (recalcBtn) {
-      recalcBtn.addEventListener('click', () => {
-        recalcBtn.disabled = true;
-        recalcBtn.innerHTML = '<span>⏳</span><span>Calculating ET0...</span>';
-
-        setTimeout(() => {
-          // Slight weather variation
-          this.farmMetrics.tempC = +(29.0 + (Math.random() * 1.5 - 0.7)).toFixed(1);
-          this.farmMetrics.humidityPct = Math.round(45 + (Math.random() * 6 - 3));
-          this.farmMetrics.windKmh = +(8.2 + (Math.random() * 2 - 1)).toFixed(1);
-          this.farmMetrics.et0 = +(4.80 + (Math.random() * 0.3 - 0.15)).toFixed(2);
-
-          const tempEl = document.getElementById('strip-temp');
-          const rhEl = document.getElementById('strip-rh');
-          const windEl = document.getElementById('strip-wind');
-          const et0El = document.getElementById('strip-et0');
-
-          if (tempEl) tempEl.textContent = `${this.farmMetrics.tempC}°C`;
-          if (rhEl) rhEl.textContent = `${this.farmMetrics.humidityPct}%`;
-          if (windEl) windEl.textContent = `${this.farmMetrics.windKmh} km/h`;
-          if (et0El) et0El.innerHTML = `${this.farmMetrics.et0} <span style="font-size:12px;">mm/day</span>`;
-
-          recalcBtn.disabled = false;
-          recalcBtn.innerHTML = '<span>⚡</span><span>Recalculate AI Model</span>';
-          window.showToast('AI Model recalculated: Evapotranspiration ET0 updated to ' + this.farmMetrics.et0 + ' mm/day.', 'success');
-        }, 800);
-      });
-    }
-
-    // Direct Run Pump Action in Cards
+  bindCardActions() {
     document.querySelectorAll('.btn-ai-action').forEach(btn => {
       btn.addEventListener('click', async () => {
         const action = btn.getAttribute('data-action');
         const pumpId = btn.getAttribute('data-pump-id');
-        const parcelId = btn.getAttribute('data-parcel-id');
 
         if (action === 'run_now') {
           btn.disabled = true;
@@ -588,6 +550,28 @@ const AiAdvisoryView = {
         }
       });
     });
+  },
+
+  bindActions() {
+    this.bindCardActions();
+
+    // Recalculate AI Model Button (triggers live API fetch)
+    const recalcBtn = document.getElementById('btn-recalculate-ai');
+    const spinIcon = document.getElementById('recalc-spin-icon');
+    if (recalcBtn) {
+      recalcBtn.addEventListener('click', async () => {
+        recalcBtn.disabled = true;
+        if (spinIcon) spinIcon.style.animation = 'spin 1s linear infinite';
+        recalcBtn.innerHTML = '<span>⏳</span><span>Fetching Live Weather...</span>';
+
+        await this.loadLiveWeather(true);
+
+        recalcBtn.disabled = false;
+        recalcBtn.innerHTML = '<span>⚡</span><span>Recalculate AI Model</span>';
+        if (spinIcon) spinIcon.style.animation = '';
+        window.showToast(`AI Model synchronized: Live ET0 is ${this.farmMetrics.et0} mm/day.`, 'success');
+      });
+    }
 
     // Overrides: Cotton Run
     const cottonRunBtn = document.getElementById('btn-override-run-cotton');
@@ -624,8 +608,9 @@ const AiAdvisoryView = {
     // Overrides: Force Sync
     const forceSyncBtn = document.getElementById('btn-override-force-sync');
     if (forceSyncBtn) {
-      forceSyncBtn.addEventListener('click', () => {
-        window.showToast('All 4 sensor nodes polled. Micro-climate telemetry synced.', 'success');
+      forceSyncBtn.addEventListener('click', async () => {
+        await this.loadLiveWeather(true);
+        window.showToast('All 4 sensor nodes & satellite agromet telemetry synced.', 'success');
       });
     }
   },

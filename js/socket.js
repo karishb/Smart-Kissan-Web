@@ -218,3 +218,4 @@ const SmartKisanSocket = (() => {
 })();
 
 window.SmartKisanSocket = SmartKisanSocket;
+
