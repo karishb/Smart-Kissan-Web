@@ -89,6 +89,12 @@ const App = (() => {
               <span>${I18N.t('reports')}</span>
             </a>
           </li>
+          <li>
+            <a href="#/rms-logs" class="nav-link">
+              <span>📶</span>
+              <span>${I18N.t('rmsLogs')}</span>
+            </a>
+          </li>
         `;
       }
 

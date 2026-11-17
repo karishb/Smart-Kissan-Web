@@ -15,7 +15,9 @@ const Router = (() => {
     '#/schedules': { view: SchedulesView, isProtected: true },
     '#/sensors': { view: SensorsView, isProtected: true },
     '#/ai-advisory': { view: AiAdvisoryView, isProtected: true },
-    '#/reports': { view: ReportsView, isProtected: true }
+    '#/reports': { view: ReportsView, isProtected: true },
+    '#/rms-logs': { view: RmsLogsView, isProtected: true },
+    '#/logs': { view: RmsLogsView, isProtected: true }
   };
 
   const getRoute = () => {

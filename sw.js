@@ -3,7 +3,7 @@
  * Ensures seamless offline operation in rural agricultural belts with intermittent cellular coverage.
  */
 
-const CACHE_NAME = 'smartkisan-pwa-v1.4';
+const CACHE_NAME = 'smartkisan-pwa-v1.5';
 const ASSETS_TO_CACHE = [
   './',
   'index.html',
@@ -27,6 +27,7 @@ const ASSETS_TO_CACHE = [
   'js/views/sensorsView.js',
   'js/views/aiAdvisoryView.js',
   'js/views/reportsView.js',
+  'js/views/rmsLogsView.js',
   'icons/icon-192.png',
   'icons/icon-512.png'
 ];
