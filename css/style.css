@@ -2065,61 +2065,39 @@ button {
 
 /* ============================================================
    SmartKisan RMS Hardware Telemetry & Device Heartbeat Logs
-   Visual Layout & Dark Engineering Theme matching rmssystem.in/CNP/log.php
+   Dual-Theme System: SmartKisan Brand Colors (Default) & Industrial RMS Dark
    ============================================================ */
 
-.rms-view-wrapper {
-  background: #0B1320;
+.rms-view-container {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 24px 20px;
   min-height: calc(100vh - 68px);
-  padding: 24px;
-  color: #E2E8F0;
-  display: flex;
-  flex-direction: column;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-.rms-top-bar {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 20px;
-  gap: 14px;
-}
-
-.rms-title-container {
-  text-align: center;
-}
-
-.rms-main-title {
-  font-size: 26px;
-  font-weight: 800;
-  color: #FFFFFF;
-  letter-spacing: -0.5px;
-  margin: 0;
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
-}
-
-.rms-sub-badge {
+/* ── Live Badge ── */
+.rms-live-badge-brand {
   display: inline-flex;
   align-items: center;
   gap: 6px;
   font-size: 11px;
   font-weight: 700;
-  letter-spacing: 0.8px;
-  color: #38BDF8;
-  background: rgba(56, 189, 248, 0.1);
+  letter-spacing: 0.6px;
+  color: var(--primary);
+  background: var(--primary-50);
   padding: 3px 10px;
   border-radius: 9999px;
-  border: 1px solid rgba(56, 189, 248, 0.25);
-  margin-top: 6px;
+  border: 1px solid var(--primary-100);
 }
 
 .rms-live-dot {
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background-color: #34D399;
-  box-shadow: 0 0 8px #34D399;
+  background-color: #10B981;
+  box-shadow: 0 0 8px #10B981;
   animation: rmsPulse 1.8s infinite;
 }
 
@@ -2129,26 +2107,32 @@ button {
   100% { transform: scale(0.95); opacity: 0.7; }
 }
 
-.rms-toolbar {
-  width: 100%;
+/* ── Toolbar & Filter ── */
+.rms-card-container {
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--bg-card);
+}
+
+.rms-card-toolbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  flex-wrap: wrap;
   gap: 12px;
-  background: #131F33;
-  padding: 12px 16px;
-  border-radius: 8px;
-  border: 1px solid #1E3557;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-card-subtle);
+  flex-wrap: wrap;
 }
 
-.rms-search-box {
+.rms-search-wrap {
   display: flex;
   align-items: center;
   gap: 8px;
-  background: #0B1320;
-  border: 1px solid #1E3557;
-  border-radius: 6px;
+  background: #FFFFFF;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
   padding: 6px 12px;
   flex: 1;
   min-width: 260px;
@@ -2159,20 +2143,23 @@ button {
   background: transparent;
   border: none;
   outline: none;
-  color: #FFFFFF;
+  color: var(--text-main);
   font-size: 13px;
   width: 100%;
 }
 
-.rms-search-field::placeholder {
-  color: #64748B;
+.rms-toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
 .rms-filter-select {
-  background: #0B1320;
-  border: 1px solid #1E3557;
-  color: #E2E8F0;
-  border-radius: 6px;
+  background: #FFFFFF;
+  border: 1px solid var(--border);
+  color: var(--text-main);
+  border-radius: var(--radius-sm);
   padding: 6px 12px;
   font-size: 13px;
   outline: none;
@@ -2180,45 +2167,35 @@ button {
 }
 
 .rms-btn-action {
-  background: #1E3557;
-  color: #F8FAFC;
-  border: 1px solid #2B4C7E;
-  padding: 7px 14px;
-  border-radius: 6px;
+  background: #FFFFFF;
+  color: var(--text-main);
+  border: 1px solid var(--border);
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
   font-size: 12.5px;
   font-weight: 600;
   display: inline-flex;
   align-items: center;
   gap: 6px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: var(--transition);
 }
 
 .rms-btn-action:hover {
-  background: #254674;
-  border-color: #38BDF8;
+  border-color: var(--primary);
+  color: var(--primary);
 }
 
 .rms-btn-action.paused {
-  background: #334155;
-  border-color: #475569;
-  color: #94A3B8;
+  background: #F3F4F6;
+  color: var(--text-muted);
 }
 
-/* RMS Table Outer & Scroll */
-.rms-table-outer {
-  flex: 1;
-  background: #131F33;
-  border-radius: 8px;
-  border: 1px solid #1E3557;
-  overflow: hidden;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-}
-
-.rms-table-container {
+/* ── Table Scroll Container ── */
+.rms-table-scroll-wrap {
   overflow-x: auto;
   overflow-y: auto;
-  max-height: calc(100vh - 270px);
+  max-height: calc(100vh - 310px);
 }
 
 .rms-data-table {
@@ -2228,112 +2205,270 @@ button {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, monospace;
 }
 
-.rms-data-table thead th {
-  background: #1E3557;
+/* ============================================================
+   BRAND THEME (Default - SmartKisan Colors)
+   ============================================================ */
+.rms-theme-brand .rms-data-table thead th {
+  background: linear-gradient(135deg, #1B5E20, #2E7D32);
   color: #FFFFFF;
+  padding: 11px 8px;
+  font-weight: 700;
+  text-align: center;
+  border: 1px solid #1B5E20;
+  white-space: nowrap;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  letter-spacing: 0.2px;
+}
+
+.rms-theme-brand .rms-data-table tbody td {
+  padding: 8px 8px;
+  border: 1px solid #E5E7EB;
+  color: #334155;
+  vertical-align: middle;
+  background: #FFFFFF;
+}
+
+.rms-theme-brand .rms-data-table tbody tr:nth-child(even) td {
+  background: #F9FBFA;
+}
+
+.rms-theme-brand .rms-data-table tbody tr:hover td {
+  background: #E8F5E9;
+}
+
+.rms-theme-brand .rms-cell-sno {
+  color: #64748B;
+  font-weight: 600;
+}
+
+.rms-theme-brand .rms-cell-unique {
+  color: #1B5E20;
+  font-weight: 700;
+}
+
+.rms-theme-brand .rms-cell-imei {
+  color: #1E293B;
+  font-weight: 500;
+}
+
+.rms-theme-brand .rms-cell-kwh {
+  color: #059669;
+  font-weight: 700;
+}
+
+.rms-theme-brand .rms-cell-time {
+  color: #0F172A;
+  font-weight: 600;
+}
+
+.rms-theme-brand .rms-val-on {
+  display: inline-block;
+  padding: 2px 7px;
+  background: #E8F5E9;
+  color: #1B5E20;
+  border: 1px solid #C8E6C9;
+  border-radius: 4px;
+  font-weight: 700;
+}
+
+.rms-theme-brand .rms-val-running {
+  display: inline-block;
+  padding: 2px 7px;
+  background: #EFF6FF;
+  color: #1D4ED8;
+  border: 1px solid #BFDBFE;
+  border-radius: 4px;
+  font-weight: 700;
+}
+
+.rms-theme-brand .rms-val-off {
+  display: inline-block;
+  padding: 2px 7px;
+  background: #F3F4F6;
+  color: #6B7280;
+  border: 1px solid #E5E7EB;
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+.rms-theme-brand .rms-map-pin-btn {
+  background: #2E7D32;
+  color: #FFFFFF;
+  border: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(46, 125, 50, 0.3);
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+
+.rms-theme-brand .rms-map-pin-btn:hover {
+  background: #1B5E20;
+  transform: scale(1.1);
+}
+
+.rms-theme-brand .rms-row-new td {
+  animation: brandHeartbeatFlash 1.6s ease-out;
+}
+
+@keyframes brandHeartbeatFlash {
+  0% { background: #BBF7D0 !important; color: #14532D !important; }
+  100% { background: inherit; }
+}
+
+/* ============================================================
+   DARK THEME (Industrial RMS / rmssystem.in control room)
+   ============================================================ */
+.rms-theme-dark {
+  background: #0B1320;
+  border-radius: 8px;
+  color: #E2E8F0;
+}
+
+.rms-theme-dark .welcome-title,
+.rms-theme-dark .rms-card-container {
+  background: #131F33 !important;
+  border-color: #1E3557 !important;
+  color: #FFFFFF !important;
+}
+
+.rms-theme-dark .welcome-subtitle {
+  color: #94A3B8 !important;
+}
+
+.rms-theme-dark .kpi-card {
+  background: #131F33 !important;
+  border-color: #1E3557 !important;
+  color: #FFFFFF !important;
+}
+
+.rms-theme-dark .kpi-label,
+.rms-theme-dark .kpi-subtext {
+  color: #94A3B8 !important;
+}
+
+.rms-theme-dark .kpi-value {
+  color: #FFFFFF !important;
+}
+
+.rms-theme-dark .rms-card-toolbar {
+  background: #131F33 !important;
+  border-color: #1E3557 !important;
+}
+
+.rms-theme-dark .rms-search-wrap,
+.rms-theme-dark .rms-filter-select,
+.rms-theme-dark .rms-btn-action {
+  background: #0B1320 !important;
+  border-color: #1E3557 !important;
+  color: #FFFFFF !important;
+}
+
+.rms-theme-dark .rms-search-field {
+  color: #FFFFFF !important;
+}
+
+.rms-theme-dark .rms-data-table thead th {
+  background: #1E3557 !important;
+  color: #FFFFFF !important;
+  border: 1px solid #284772 !important;
   padding: 10px 8px;
   font-weight: 700;
   text-align: center;
-  border: 1px solid #284772;
-  white-space: nowrap;
   position: sticky;
   top: 0;
   z-index: 20;
 }
 
-.rms-data-table tbody td {
+.rms-theme-dark .rms-data-table tbody td {
   padding: 7px 8px;
-  border: 1px solid #1A2B44;
-  color: #CBD5E1;
-  vertical-align: middle;
+  border: 1px solid #1A2B44 !important;
+  color: #CBD5E1 !important;
+  background: #131F33 !important;
 }
 
-.rms-data-table tbody tr {
-  background: #131F33;
-  transition: background 0.15s ease;
+.rms-theme-dark .rms-data-table tbody tr:nth-child(even) td {
+  background: #0E182A !important;
 }
 
-.rms-data-table tbody tr:nth-child(even) {
-  background: #0E182A;
+.rms-theme-dark .rms-data-table tbody tr:hover td {
+  background: #1B2B46 !important;
 }
 
-.rms-data-table tbody tr:hover {
-  background: #1B2B46;
+.rms-theme-dark .rms-cell-unique {
+  color: #38BDF8 !important;
 }
 
-.rms-row-new {
-  animation: heartbeatFlash 1.6s ease-out;
+.rms-theme-dark .rms-cell-kwh {
+  color: #6EE7B7 !important;
 }
 
-@keyframes heartbeatFlash {
+.rms-theme-dark .rms-cell-time {
+  color: #F8FAFC !important;
+}
+
+.rms-theme-dark .rms-val-on {
+  background: rgba(52, 211, 153, 0.15) !important;
+  color: #34D399 !important;
+  border: 1px solid rgba(52, 211, 153, 0.4) !important;
+}
+
+.rms-theme-dark .rms-val-running {
+  background: rgba(56, 189, 248, 0.15) !important;
+  color: #38BDF8 !important;
+  border: 1px solid rgba(56, 189, 248, 0.4) !important;
+}
+
+.rms-theme-dark .rms-val-off {
+  background: rgba(148, 163, 184, 0.1) !important;
+  color: #64748B !important;
+  border: 1px solid rgba(148, 163, 184, 0.2) !important;
+}
+
+.rms-theme-dark .rms-map-pin-btn {
+  background: #0284C7 !important;
+  box-shadow: 0 2px 6px rgba(2, 132, 199, 0.4) !important;
+}
+
+.rms-theme-dark .rms-map-pin-btn:hover {
+  background: #0369A1 !important;
+}
+
+.rms-theme-dark .rms-row-new td {
+  animation: darkHeartbeatFlash 1.6s ease-out;
+}
+
+@keyframes darkHeartbeatFlash {
   0% { background: #0369A1 !important; color: #FFFFFF !important; }
   100% { background: inherit; }
 }
 
-/* Specific Cell Alignments */
-.rms-cell-center {
-  text-align: center;
-}
-
-.rms-cell-right {
-  text-align: right;
-}
-
-.rms-cell-bold {
-  font-weight: 700;
-}
-
+/* ── Common Cell Formatting ── */
+.rms-cell-center { text-align: center; }
+.rms-cell-right { text-align: right; }
+.rms-cell-bold { font-weight: 700; }
 .rms-cell-mono {
   font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
   letter-spacing: -0.2px;
 }
-
 .rms-cell-numeric {
   font-variant-numeric: tabular-nums;
   font-weight: 600;
 }
+.rms-cell-small { font-size: 11px; }
 
-.rms-cell-small {
-  font-size: 11px;
-}
-
-/* Status Values (1 / 0) */
-.rms-val-on {
-  display: inline-block;
-  padding: 2px 7px;
-  background: rgba(52, 211, 153, 0.15);
-  color: #34D399;
-  border: 1px solid rgba(52, 211, 153, 0.4);
-  border-radius: 4px;
-  font-weight: 700;
-}
-
-.rms-val-running {
-  display: inline-block;
-  padding: 2px 7px;
-  background: rgba(56, 189, 248, 0.15);
-  color: #38BDF8;
-  border: 1px solid rgba(56, 189, 248, 0.4);
-  border-radius: 4px;
-  font-weight: 700;
-}
-
-.rms-val-off {
-  display: inline-block;
-  padding: 2px 7px;
-  background: rgba(148, 163, 184, 0.1);
-  color: #64748B;
-  border: 1px solid rgba(148, 163, 184, 0.2);
-  border-radius: 4px;
-  font-weight: 600;
-}
-
-/* Motor Error Badges */
+/* ── Error Badges ── */
 .rms-badge-normal {
   display: inline-block;
   padding: 2px 6px;
   background: rgba(16, 185, 129, 0.15);
-  color: #10B981;
+  color: #059669;
   border-radius: 3px;
   font-weight: 700;
 }
@@ -2341,8 +2476,8 @@ button {
 .rms-badge-warn {
   display: inline-block;
   padding: 2px 6px;
-  background: rgba(245, 158, 11, 0.2);
-  color: #FBBF24;
+  background: rgba(245, 158, 11, 0.18);
+  color: #D97706;
   border-radius: 3px;
   font-weight: 700;
 }
@@ -2350,8 +2485,8 @@ button {
 .rms-badge-danger {
   display: inline-block;
   padding: 2px 6px;
-  background: rgba(239, 68, 68, 0.2);
-  color: #F87171;
+  background: rgba(239, 68, 68, 0.18);
+  color: #DC2626;
   border-radius: 3px;
   font-weight: 700;
 }
@@ -2359,13 +2494,13 @@ button {
 .rms-badge-offline {
   display: inline-block;
   padding: 2px 6px;
-  background: rgba(100, 116, 139, 0.2);
-  color: #94A3B8;
+  background: rgba(100, 116, 139, 0.18);
+  color: #64748B;
   border-radius: 3px;
   font-weight: 700;
 }
 
-/* GSM Signal Pill */
+/* ── GSM Signal Pill ── */
 .rms-gsm-pill {
   display: inline-flex;
   align-items: center;
@@ -2377,77 +2512,25 @@ button {
 }
 
 .rms-gsm-pill.signal-good {
-  color: #34D399;
-  background: rgba(52, 211, 153, 0.12);
+  color: #059669;
+  background: rgba(16, 185, 129, 0.12);
 }
 
 .rms-gsm-pill.signal-med {
-  color: #FBBF24;
+  color: #D97706;
   background: rgba(245, 158, 11, 0.12);
 }
 
 .rms-gsm-pill.signal-weak {
-  color: #F87171;
+  color: #DC2626;
   background: rgba(239, 68, 68, 0.12);
 }
 
-/* Map Pin Button */
-.rms-map-pin-btn {
-  background: #0284C7;
-  color: #FFFFFF;
-  border: none;
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  box-shadow: 0 2px 6px rgba(2, 132, 199, 0.4);
-  transition: transform 0.15s ease, background 0.15s ease;
-}
-
-.rms-map-pin-btn:hover {
-  background: #0369A1;
-  transform: scale(1.1);
-}
-
-/* Bottom Metric Strip */
-.rms-bottom-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 16px;
-  padding: 12px 18px;
-  background: #131F33;
-  border: 1px solid #1E3557;
-  border-radius: 8px;
-  margin-top: 14px;
-  font-size: 12.5px;
-}
-
-.rms-stat-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.rms-stat-label {
-  color: #94A3B8;
-  font-weight: 500;
-}
-
-.rms-stat-val {
-  color: #FFFFFF;
-  font-weight: 700;
-}
-
-/* RMS GIS Map Modal */
+/* ── RMS GIS Map Modal ── */
 .rms-modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(3, 7, 18, 0.85);
+  background: rgba(3, 7, 18, 0.75);
   backdrop-filter: blur(4px);
   z-index: 2000;
   display: none;
@@ -2457,12 +2540,12 @@ button {
 }
 
 .rms-modal-dialog {
-  background: #0F172A;
-  border: 1px solid #1E3557;
-  border-radius: 12px;
+  background: #FFFFFF;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
   width: 100%;
   max-width: 680px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+  box-shadow: var(--shadow-xl);
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -2470,8 +2553,8 @@ button {
 
 .rms-modal-header {
   padding: 16px 20px;
-  background: #131F33;
-  border-bottom: 1px solid #1E3557;
+  background: var(--bg-card-subtle);
+  border-bottom: 1px solid var(--border);
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
@@ -2479,7 +2562,7 @@ button {
 
 .rms-modal-close {
   background: transparent;
-  color: #94A3B8;
+  color: var(--text-muted);
   font-size: 18px;
   border: none;
   cursor: pointer;
@@ -2487,7 +2570,7 @@ button {
 }
 
 .rms-modal-close:hover {
-  color: #FFFFFF;
+  color: var(--text-main);
 }
 
 .rms-modal-body {
@@ -2501,10 +2584,10 @@ button {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
   gap: 10px;
-  background: #131F33;
+  background: var(--bg-card-subtle);
   padding: 12px;
-  border-radius: 8px;
-  border: 1px solid #1E3557;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
 }
 
 .rms-telemetry-item {
@@ -2515,19 +2598,19 @@ button {
 
 .rms-telemetry-lbl {
   font-size: 11px;
-  color: #94A3B8;
+  color: var(--text-muted);
 }
 
 .rms-telemetry-val {
   font-size: 13px;
   font-weight: 700;
-  color: #FFFFFF;
+  color: var(--text-main);
 }
 
 .rms-modal-footer {
   padding: 14px 20px;
-  background: #131F33;
-  border-top: 1px solid #1E3557;
+  background: var(--bg-card-subtle);
+  border-top: 1px solid var(--border);
   display: flex;
   justify-content: flex-end;
   gap: 10px;

@@ -1,6 +1,7 @@
 /**
  * SmartKisan Web Platform - RMS Hardware Telemetry & Device Heartbeat Logs View
  * Dedicated Web-only live engineering telemetry feed matching rmssystem.in/CNP/log.php
+ * Dual-theme support: SmartKisan Agrarian Brand Theme (Default) & Industrial RMS Dark Theme
  * Real-time hardware heartbeat packets, electrical & agrarian telemetry, and GIS mapping.
  */
 
@@ -11,6 +12,7 @@ const RmsLogsView = (() => {
   let statusFilter = 'all';
   let modalMapInstance = null;
   let logsData = [];
+  let currentTheme = localStorage.getItem('smartkisan_rms_theme') || 'brand'; // 'brand' (SmartKisan green/white) or 'dark' (industrial navy)
 
   // Seed initial device master data
   const deviceMaster = [
@@ -397,9 +399,8 @@ const RmsLogsView = (() => {
     for (let i = 0; i < 45; i++) {
       const devIndex = i % deviceMaster.length;
       const baseDev = deviceMaster[devIndex];
-      const logTime = new Date(now.getTime() - i * 1800); // 1.8s steps backward
+      const logTime = new Date(now.getTime() - i * 1800);
       
-      // Add slight jitter for realistic telemetry variation
       const vJitter = baseDev.voltage > 0 ? (Math.random() * 6 - 3) : 0;
       const aJitter = baseDev.current > 0 ? (Math.random() * 0.4 - 0.2) : 0;
       const fJitter = baseDev.flowRate > 0 ? Math.floor(Math.random() * 10 - 5) : 0;
@@ -463,7 +464,6 @@ const RmsLogsView = (() => {
       isNew: true
     };
 
-    // Prepend and re-index
     logsData.unshift(newLog);
     if (logsData.length > 100) {
       logsData.pop();
@@ -496,7 +496,7 @@ const RmsLogsView = (() => {
     });
   };
 
-  // Render Table Rows matching rmssystem.in/CNP/log.php styling
+  // Render Table Rows
   const renderTableBody = () => {
     const tbody = document.getElementById('rms-logs-tbody');
     if (!tbody) return;
@@ -506,7 +506,7 @@ const RmsLogsView = (() => {
     if (filtered.length === 0) {
       tbody.innerHTML = `
         <tr>
-          <td colspan="15" style="padding: 30px; text-align: center; color: #94A3B8; font-size: 14px;">
+          <td colspan="15" style="padding: 30px; text-align: center; color: var(--text-muted); font-size: 14px;">
             🔍 No telemetry packets match the filter criteria.
           </td>
         </tr>
@@ -547,9 +547,9 @@ const RmsLogsView = (() => {
 
       return `
         <tr class="${rowClass}" data-rms="${row.rmsNo}">
-          <td class="rms-cell-center">${row.sNo}</td>
-          <td class="rms-cell-bold rms-cell-center" style="color: #38BDF8;">${row.rmsNo}</td>
-          <td class="rms-cell-mono">${row.imei}</td>
+          <td class="rms-cell-center rms-cell-sno">${row.sNo}</td>
+          <td class="rms-cell-bold rms-cell-center rms-cell-unique">${row.rmsNo}</td>
+          <td class="rms-cell-mono rms-cell-imei">${row.imei}</td>
           <td class="rms-cell-center">
             <span class="${row.power === 1 ? 'rms-val-on' : 'rms-val-off'}">${row.power}</span>
           </td>
@@ -562,7 +562,7 @@ const RmsLogsView = (() => {
           <td class="rms-cell-right rms-cell-numeric">${row.voltage.toFixed(2)}</td>
           <td class="rms-cell-right rms-cell-numeric">${row.current.toFixed(2)}</td>
           <td class="rms-cell-center rms-cell-numeric">${row.frequency}</td>
-          <td class="rms-cell-right rms-cell-numeric" style="color: #6EE7B7;">${row.kwh.toFixed(3)}</td>
+          <td class="rms-cell-right rms-cell-numeric rms-cell-kwh">${row.kwh.toFixed(3)}</td>
           <td class="rms-cell-mono rms-cell-small">${row.lat.toFixed(6)}</td>
           <td class="rms-cell-mono rms-cell-small">${row.lng.toFixed(6)}</td>
           <td class="rms-cell-center">
@@ -570,7 +570,7 @@ const RmsLogsView = (() => {
               📶 ${row.gsm}
             </span>
           </td>
-          <td class="rms-cell-center rms-cell-mono" style="color: #F8FAFC; white-space: nowrap;">
+          <td class="rms-cell-center rms-cell-mono rms-cell-time">
             ${row.timestamp}
           </td>
           <td class="rms-cell-center">
@@ -580,7 +580,7 @@ const RmsLogsView = (() => {
               title="Locate ${row.name} on GIS Map" 
               onclick="RmsLogsView.openMapModal('${row.rmsNo}', '${row.name}', '${row.parcel}', ${row.lat}, ${row.lng}, ${row.voltage}, ${row.current}, ${row.flowRate}, ${row.moisture}, ${row.power}, ${row.motor})"
             >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
               </svg>
             </button>
@@ -589,7 +589,6 @@ const RmsLogsView = (() => {
       `;
     }).join('');
 
-    // Clear new flag after animation
     setTimeout(() => {
       logsData.forEach(row => { row.isNew = false; });
     }, 1500);
@@ -602,16 +601,36 @@ const RmsLogsView = (() => {
     const avgVoltageEl = document.getElementById('rms-stat-voltage');
     const networkHealthEl = document.getElementById('rms-stat-network');
 
-    if (!totalPacketsEl) return;
-
     const running = logsData.filter(d => d.motor === 1).length;
     const activeVoltages = logsData.filter(d => d.voltage > 0).map(d => d.voltage);
     const avgV = activeVoltages.length ? (activeVoltages.reduce((a, b) => a + b, 0) / activeVoltages.length).toFixed(1) : '415.0';
 
-    totalPacketsEl.textContent = logsData.length;
+    if (totalPacketsEl) totalPacketsEl.textContent = logsData.length;
     if (runningMotorsEl) runningMotorsEl.textContent = `${running} Active`;
     if (avgVoltageEl) avgVoltageEl.textContent = `${avgV} V`;
     if (networkHealthEl) networkHealthEl.textContent = '100% ONLINE';
+  };
+
+  // Toggle Theme between SmartKisan Brand Colors (Green & White) and Dark RMS Industrial
+  const toggleTheme = () => {
+    currentTheme = currentTheme === 'brand' ? 'dark' : 'brand';
+    localStorage.setItem('smartkisan_rms_theme', currentTheme);
+
+    const rootWrapper = document.getElementById('rms-view-root');
+    const themeIcon = document.getElementById('rms-theme-icon');
+    const themeLabel = document.getElementById('rms-theme-label');
+
+    if (rootWrapper) {
+      rootWrapper.className = `rms-view-container rms-theme-${currentTheme}`;
+    }
+    if (themeIcon) {
+      themeIcon.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+    }
+    if (themeLabel) {
+      themeLabel.textContent = currentTheme === 'dark' ? 'SmartKisan Colors' : 'Industrial Dark';
+    }
+
+    window.showToast(`Switched to ${currentTheme === 'dark' ? 'Industrial RMS Dark Theme' : 'SmartKisan Brand Colors'}`, 'info');
   };
 
   // Open interactive GIS Map Modal
@@ -628,28 +647,28 @@ const RmsLogsView = (() => {
       <div class="rms-modal-dialog">
         <div class="rms-modal-header">
           <div>
-            <div style="font-size: 11px; text-transform: uppercase; color: #38BDF8; font-weight: 700; letter-spacing: 0.5px;">
+            <div style="font-size: 11px; text-transform: uppercase; color: var(--primary); font-weight: 700; letter-spacing: 0.5px;">
               IoT Hardware GPS Geolocation
             </div>
-            <h3 style="margin: 2px 0 0; color: #FFFFFF; font-size: 18px; font-weight: 700;">
+            <h3 style="margin: 2px 0 0; color: var(--text-main); font-size: 18px; font-weight: 700;">
               RMS Node #${rmsNo} — ${name}
             </h3>
-            <div style="font-size: 12px; color: #94A3B8;">Field: ${parcel} | Coordinates: ${lat.toFixed(6)}, ${lng.toFixed(6)}</div>
+            <div style="font-size: 12px; color: var(--text-muted);">Field: ${parcel} | Coordinates: ${lat.toFixed(6)}, ${lng.toFixed(6)}</div>
           </div>
           <button type="button" class="rms-modal-close" onclick="RmsLogsView.closeMapModal()">✕</button>
         </div>
 
         <div class="rms-modal-body">
-          <div id="rms-modal-map" style="width: 100%; height: 340px; border-radius: 8px; background: #0F172A;"></div>
+          <div id="rms-modal-map" style="width: 100%; height: 320px; border-radius: 8px; background: #0F172A;"></div>
           
           <div class="rms-modal-telemetry-grid">
             <div class="rms-telemetry-item">
               <span class="rms-telemetry-lbl">Power State</span>
-              <span class="rms-telemetry-val" style="color: ${power === 1 ? '#34D399' : '#94A3B8'}">${power === 1 ? '● ON (1)' : '○ STANDBY (0)'}</span>
+              <span class="rms-telemetry-val" style="color: ${power === 1 ? 'var(--primary)' : 'var(--text-muted)'}">${power === 1 ? '● ON (1)' : '○ STANDBY (0)'}</span>
             </div>
             <div class="rms-telemetry-item">
               <span class="rms-telemetry-lbl">Motor Status</span>
-              <span class="rms-telemetry-val" style="color: ${motor === 1 ? '#38BDF8' : '#94A3B8'}">${motor === 1 ? '⚡ RUNNING (1)' : '⏸ STOPPED (0)'}</span>
+              <span class="rms-telemetry-val" style="color: ${motor === 1 ? '#0284C7' : 'var(--text-muted)'}">${motor === 1 ? '⚡ RUNNING (1)' : '⏸ STOPPED (0)'}</span>
             </div>
             <div class="rms-telemetry-item">
               <span class="rms-telemetry-lbl">3-Phase Voltage</span>
@@ -665,13 +684,13 @@ const RmsLogsView = (() => {
             </div>
             <div class="rms-telemetry-item">
               <span class="rms-telemetry-lbl">Soil Moisture</span>
-              <span class="rms-telemetry-val" style="color: #6EE7B7;">${moisture.toFixed(1)}%</span>
+              <span class="rms-telemetry-val" style="color: var(--primary);">${moisture.toFixed(1)}%</span>
             </div>
           </div>
         </div>
 
         <div class="rms-modal-footer">
-          <button type="button" class="btn-refresh" style="background:#1E293B; color:#CBD5E1; border:1px solid #334155;" onclick="RmsLogsView.closeMapModal()">
+          <button type="button" class="btn-refresh" onclick="RmsLogsView.closeMapModal()">
             Close
           </button>
           <a href="#/fields" class="btn-primary" style="width: auto; padding: 8px 18px; font-size: 13px; text-decoration: none;" onclick="RmsLogsView.closeMapModal()">
@@ -683,7 +702,6 @@ const RmsLogsView = (() => {
 
     modal.style.display = 'flex';
 
-    // Initialize mini Leaflet map
     setTimeout(() => {
       try {
         if (typeof L !== 'undefined') {
@@ -696,19 +714,17 @@ const RmsLogsView = (() => {
             zoomControl: true
           });
 
-          // Satellite Imagery layer with OpenStreetMap attribution
           L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
             attribution: 'Esri Satellite & SmartKisan GIS'
           }).addTo(modalMapInstance);
 
-          // Add pulsing marker
           const customMarker = L.circleMarker([lat, lng], {
             radius: 10,
-            fillColor: motor === 1 ? '#00e5ff' : '#4ade80',
+            fillColor: motor === 1 ? '#2E7D32' : '#3B82F6',
             color: '#FFFFFF',
             weight: 3,
             opacity: 1,
-            fillOpacity: 0.9
+            fillOpacity: 0.95
           }).addTo(modalMapInstance);
 
           customMarker.bindPopup(`
@@ -787,61 +803,114 @@ const RmsLogsView = (() => {
       }
 
       return `
-        <div class="rms-view-wrapper">
-          <!-- RMS Header matching screenshot style -->
-          <div class="rms-top-bar">
-            <div class="rms-title-container">
-              <h1 class="rms-main-title">RMS Data Logs</h1>
-              <div class="rms-sub-badge">
-                <span class="rms-live-dot"></span>
-                <span>REAL-TIME HARDWARE TELEMETRY STREAM</span>
-              </div>
+        <div id="rms-view-root" class="rms-view-container rms-theme-${currentTheme}">
+          <!-- View Header -->
+          <div class="dashboard-header" style="margin-bottom: 20px;">
+            <div>
+              <h1 class="welcome-title" style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                <span>📶</span>
+                <span>RMS Hardware Telemetry & Device Heartbeat Logs</span>
+                <span class="rms-live-badge-brand">
+                  <span class="rms-live-dot"></span>
+                  <span>LIVE HARDWARE STREAM</span>
+                </span>
+              </h1>
+              <p class="welcome-subtitle">
+                Real-time raw packet telemetry stream, 3-phase electrical monitoring, fault diagnostics, and spatial GIS mapping
+              </p>
             </div>
 
-            <!-- Toolbar Actions -->
-            <div class="rms-toolbar">
-              <div class="rms-search-box">
-                <span style="color: #94A3B8;">🔍</span>
-                <input 
-                  type="text" 
-                  id="rms-search-input" 
-                  class="rms-search-field" 
-                  placeholder="Search IMEI, RMS No, Node or Parcel..." 
-                  value="${searchQuery}"
-                />
-              </div>
-
-              <select id="rms-status-filter" class="rms-filter-select">
-                <option value="all" ${statusFilter === 'all' ? 'selected' : ''}>All Logs</option>
-                <option value="running" ${statusFilter === 'running' ? 'selected' : ''}>Motor Running (1)</option>
-                <option value="standby" ${statusFilter === 'standby' ? 'selected' : ''}>Motor Standby (0)</option>
-                <option value="error" ${statusFilter === 'error' ? 'selected' : ''}>Faults & Error Codes</option>
-              </select>
-
-              <button type="button" class="rms-btn-action" id="btn-rms-stream-toggle" title="Pause or Resume Live Telemetry Stream">
-                <span id="rms-stream-icon">🔴</span>
-                <span id="rms-stream-text">Live 5s</span>
+            <div class="header-actions">
+              <button type="button" class="btn-refresh" id="btn-rms-theme-toggle" title="Switch between SmartKisan Brand Colors and Industrial Dark Theme">
+                <span id="rms-theme-icon">${currentTheme === 'dark' ? '☀️' : '🌙'}</span>
+                <span id="rms-theme-label">${currentTheme === 'dark' ? 'SmartKisan Colors' : 'Industrial Dark'}</span>
               </button>
-
-              <button type="button" class="rms-btn-action" id="btn-rms-export" title="Export CSV Spreadsheet">
-                <span>📥</span>
-                <span>Export CSV</span>
-              </button>
-
-              <button type="button" class="rms-btn-action" id="btn-rms-refresh" title="Force Telemetry Sync">
-                <span>🔄</span>
+              <button type="button" class="btn-primary" id="btn-rms-export" style="width: auto;">
+                <span>📥 Export CSV</span>
               </button>
             </div>
           </div>
 
-          <!-- RMS High-Density Industrial Table Container -->
-          <div class="rms-table-outer">
-            <div class="rms-table-container">
+          <!-- KPI Summary Strip matching Dashboard -->
+          <div class="kpi-grid" style="margin-bottom: 20px;">
+            <div class="kpi-card">
+              <div class="kpi-icon-box blue"><span>📡</span></div>
+              <div class="kpi-info">
+                <div class="kpi-label">Cumulative Heartbeats</div>
+                <div class="kpi-value" id="rms-stat-total">${logsData.length}</div>
+                <div class="kpi-subtext">Telemetry packets received today</div>
+              </div>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-icon-box green"><span>⚡</span></div>
+              <div class="kpi-info">
+                <div class="kpi-label">Active Running Motors</div>
+                <div class="kpi-value" id="rms-stat-running" style="color: var(--primary);">-- Active</div>
+                <div class="kpi-subtext">Discharging field pumps</div>
+              </div>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-icon-box amber"><span>🔌</span></div>
+              <div class="kpi-info">
+                <div class="kpi-label">Average Line Voltage</div>
+                <div class="kpi-value" id="rms-stat-voltage">-- V</div>
+                <div class="kpi-subtext">3-Phase electrical grid stability</div>
+              </div>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-icon-box purple"><span>📶</span></div>
+              <div class="kpi-info">
+                <div class="kpi-label">IoT Gateway Health</div>
+                <div class="kpi-value" id="rms-stat-network" style="color: var(--success);">100% ONLINE</div>
+                <div class="kpi-subtext">All telemetry nodes reporting</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Main Table Card -->
+          <div class="card rms-card-container" style="padding: 0; overflow: hidden; margin-bottom: 24px;">
+            <!-- Toolbar Actions -->
+            <div class="rms-card-toolbar">
+              <div class="rms-search-wrap">
+                <span style="color: var(--text-muted); font-size: 14px;">🔍</span>
+                <input 
+                  type="text" 
+                  id="rms-search-input" 
+                  class="rms-search-field" 
+                  placeholder="Search IMEI, RMS Unique No, Node Name, or Parcel..." 
+                  value="${searchQuery}"
+                />
+              </div>
+
+              <div class="rms-toolbar-actions">
+                <select id="rms-status-filter" class="rms-filter-select">
+                  <option value="all" ${statusFilter === 'all' ? 'selected' : ''}>All Telemetry Logs</option>
+                  <option value="running" ${statusFilter === 'running' ? 'selected' : ''}>Motor Running (Status 1)</option>
+                  <option value="standby" ${statusFilter === 'standby' ? 'selected' : ''}>Motor Standby (Status 0)</option>
+                  <option value="error" ${statusFilter === 'error' ? 'selected' : ''}>Faults & Error Alerts</option>
+                </select>
+
+                <button type="button" class="rms-btn-action" id="btn-rms-stream-toggle" title="Pause or Resume Live Telemetry Stream">
+                  <span id="rms-stream-icon">🔴</span>
+                  <span id="rms-stream-text">Live 4.5s</span>
+                </button>
+
+                <button type="button" class="rms-btn-action" id="btn-rms-refresh" title="Force Telemetry Sync">
+                  <span>🔄</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- RMS Table Outer & Scroll -->
+            <div class="rms-table-scroll-wrap">
               <table class="rms-data-table">
                 <thead>
                   <tr>
                     <th style="width: 50px;">S No.</th>
-                    <th style="width: 90px;">RMS Unique No</th>
+                    <th style="width: 95px;">RMS Unique No</th>
                     <th style="width: 140px;">IMEI No</th>
                     <th style="width: 80px;">Power Status</th>
                     <th style="width: 80px;">Motor Status</th>
@@ -863,26 +932,6 @@ const RmsLogsView = (() => {
               </table>
             </div>
           </div>
-
-          <!-- Bottom Telemetry Status Strip -->
-          <div class="rms-bottom-bar">
-            <div class="rms-stat-item">
-              <span class="rms-stat-label">Total Heartbeat Packets:</span>
-              <span class="rms-stat-val" id="rms-stat-total">${logsData.length}</span>
-            </div>
-            <div class="rms-stat-item">
-              <span class="rms-stat-label">Active Running Pumps:</span>
-              <span class="rms-stat-val" id="rms-stat-running" style="color: #38BDF8;">-- Active</span>
-            </div>
-            <div class="rms-stat-item">
-              <span class="rms-stat-label">Average 3-Phase Grid Voltage:</span>
-              <span class="rms-stat-val" id="rms-stat-voltage" style="color: #6EE7B7;">-- V</span>
-            </div>
-            <div class="rms-stat-item">
-              <span class="rms-stat-label">IoT Gateway Health:</span>
-              <span class="rms-stat-val" id="rms-stat-network" style="color: #34D399;">100% ONLINE</span>
-            </div>
-          </div>
         </div>
       `;
     },
@@ -891,7 +940,6 @@ const RmsLogsView = (() => {
       renderTableBody();
       updateLiveMetrics();
 
-      // Bind search input
       const searchInput = document.getElementById('rms-search-input');
       if (searchInput) {
         searchInput.addEventListener('input', (e) => {
@@ -900,7 +948,6 @@ const RmsLogsView = (() => {
         });
       }
 
-      // Bind status filter dropdown
       const filterSelect = document.getElementById('rms-status-filter');
       if (filterSelect) {
         filterSelect.addEventListener('change', (e) => {
@@ -909,7 +956,6 @@ const RmsLogsView = (() => {
         });
       }
 
-      // Bind stream toggle
       const streamBtn = document.getElementById('btn-rms-stream-toggle');
       if (streamBtn) {
         streamBtn.addEventListener('click', () => {
@@ -918,7 +964,7 @@ const RmsLogsView = (() => {
           const text = document.getElementById('rms-stream-text');
           if (isStreaming) {
             icon.textContent = '🔴';
-            text.textContent = 'Live 5s';
+            text.textContent = 'Live 4.5s';
             streamBtn.classList.remove('paused');
             startLiveStream();
             window.showToast('RMS Real-Time Heartbeat Stream Resumed', 'info');
@@ -932,13 +978,16 @@ const RmsLogsView = (() => {
         });
       }
 
-      // Bind export CSV
+      const themeToggleBtn = document.getElementById('btn-rms-theme-toggle');
+      if (themeToggleBtn) {
+        themeToggleBtn.addEventListener('click', toggleTheme);
+      }
+
       const exportBtn = document.getElementById('btn-rms-export');
       if (exportBtn) {
         exportBtn.addEventListener('click', exportCsv);
       }
 
-      // Bind refresh
       const refreshBtn = document.getElementById('btn-rms-refresh');
       if (refreshBtn) {
         refreshBtn.addEventListener('click', () => {
@@ -947,7 +996,6 @@ const RmsLogsView = (() => {
         });
       }
 
-      // Start automatic streaming
       startLiveStream();
     },
 
@@ -960,7 +1008,8 @@ const RmsLogsView = (() => {
     },
 
     openMapModal,
-    closeMapModal
+    closeMapModal,
+    toggleTheme
   };
 
   function startLiveStream() {
