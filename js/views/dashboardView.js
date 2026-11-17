@@ -214,7 +214,7 @@ const DashboardView = {
                 <span>📋</span>
                 <span>Recent Farm Activity</span>
               </div>
-              <span class="panel-action">Live Log</span>
+              <a href="#/rms-logs" class="panel-action" style="cursor: pointer; text-decoration: none; color: var(--primary); font-weight: 600;">View RMS Data Logs →</a>
             </div>
 
             <ul class="activity-list" id="activity-log-list">
