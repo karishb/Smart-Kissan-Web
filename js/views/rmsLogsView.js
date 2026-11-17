@@ -1,7 +1,7 @@
 /**
  * SmartKisan Web Platform - RMS Hardware Telemetry & Device Heartbeat Logs View
  * Dedicated Web-only live engineering telemetry feed matching rmssystem.in/CNP/log.php
- * Dual-theme support: SmartKisan Agrarian Brand Theme (Default) & Industrial RMS Dark Theme
+ * Edge-to-edge full width responsive layout & direct hardware JSON schema parameters.
  * Real-time hardware heartbeat packets, electrical & agrarian telemetry, and GIS mapping.
  */
 
@@ -13,8 +13,9 @@ const RmsLogsView = (() => {
   let modalMapInstance = null;
   let logsData = [];
   let currentTheme = localStorage.getItem('smartkisan_rms_theme') || 'brand'; // 'brand' (SmartKisan green/white) or 'dark' (industrial navy)
+  let headerFormat = localStorage.getItem('smartkisan_rms_hdr_fmt') || 'json'; // 'json' (hardware keys) or 'standard' (labels)
 
-  // Seed initial device master data
+  // Seed initial device master data matching hardware specs
   const deviceMaster = [
     {
       rmsNo: '471',
@@ -30,6 +31,7 @@ const RmsLogsView = (() => {
       kwh: 1054.385,
       flowRate: 450,
       moisture: 68.2,
+      tds: 320,
       lat: 30.901025,
       lng: 75.857312,
       gsm: 28
@@ -48,6 +50,7 @@ const RmsLogsView = (() => {
       kwh: 652.296,
       flowRate: 0,
       moisture: 72.4,
+      tds: 280,
       lat: 30.902410,
       lng: 75.858920,
       gsm: 28
@@ -66,6 +69,7 @@ const RmsLogsView = (() => {
       kwh: 1053.301,
       flowRate: 310,
       moisture: 42.1,
+      tds: 410,
       lat: 30.898850,
       lng: 75.854210,
       gsm: 25
@@ -84,6 +88,7 @@ const RmsLogsView = (() => {
       kwh: 5898.236,
       flowRate: 220,
       moisture: 60.5,
+      tds: 310,
       lat: 30.903500,
       lng: 75.861200,
       gsm: 17
@@ -102,6 +107,7 @@ const RmsLogsView = (() => {
       kwh: 4814.714,
       flowRate: 0,
       moisture: 55.0,
+      tds: 290,
       lat: 30.904800,
       lng: 75.863100,
       gsm: 12
@@ -120,6 +126,7 @@ const RmsLogsView = (() => {
       kwh: 1815.451,
       flowRate: 280,
       moisture: 64.8,
+      tds: 340,
       lat: 30.897200,
       lng: 75.852100,
       gsm: 31
@@ -138,6 +145,7 @@ const RmsLogsView = (() => {
       kwh: 17061.745,
       flowRate: 520,
       moisture: 58.4,
+      tds: 360,
       lat: 30.905600,
       lng: 75.850500,
       gsm: 29
@@ -156,6 +164,7 @@ const RmsLogsView = (() => {
       kwh: 8371.691,
       flowRate: 0,
       moisture: 78.0,
+      tds: 220,
       lat: 30.900800,
       lng: 75.856400,
       gsm: 22
@@ -174,6 +183,7 @@ const RmsLogsView = (() => {
       kwh: 1896.262,
       flowRate: 0,
       moisture: 62.0,
+      tds: 350,
       lat: 30.896500,
       lng: 75.859000,
       gsm: 26
@@ -192,6 +202,7 @@ const RmsLogsView = (() => {
       kwh: 1357.092,
       flowRate: 150,
       moisture: 74.5,
+      tds: 480,
       lat: 30.902900,
       lng: 75.860100,
       gsm: 19
@@ -210,6 +221,7 @@ const RmsLogsView = (() => {
       kwh: 5751.829,
       flowRate: 410,
       moisture: 52.0,
+      tds: 390,
       lat: 28.244908,
       lng: 78.549221,
       gsm: 31
@@ -228,6 +240,7 @@ const RmsLogsView = (() => {
       kwh: 8119.455,
       flowRate: 340,
       moisture: 61.3,
+      tds: 310,
       lat: 30.904100,
       lng: 75.855200,
       gsm: 19
@@ -246,6 +259,7 @@ const RmsLogsView = (() => {
       kwh: 10168.144,
       flowRate: 600,
       moisture: 59.8,
+      tds: 330,
       lat: 27.883124,
       lng: 80.598844,
       gsm: 17
@@ -264,6 +278,7 @@ const RmsLogsView = (() => {
       kwh: 20220.853,
       flowRate: 380,
       moisture: 67.4,
+      tds: 300,
       lat: 30.901500,
       lng: 75.857900,
       gsm: 20
@@ -282,6 +297,7 @@ const RmsLogsView = (() => {
       kwh: 18900.407,
       flowRate: 0,
       moisture: 43.8,
+      tds: 420,
       lat: 30.899200,
       lng: 75.854800,
       gsm: 20
@@ -300,6 +316,7 @@ const RmsLogsView = (() => {
       kwh: 31023.585,
       flowRate: 0,
       moisture: 56.1,
+      tds: 310,
       lat: 30.904200,
       lng: 75.862500,
       gsm: 21
@@ -318,6 +335,7 @@ const RmsLogsView = (() => {
       kwh: 10965.133,
       flowRate: 290,
       moisture: 63.5,
+      tds: 295,
       lat: 30.905200,
       lng: 75.864000,
       gsm: 27
@@ -336,6 +354,7 @@ const RmsLogsView = (() => {
       kwh: 1207.963,
       flowRate: 310,
       moisture: 66.0,
+      tds: 315,
       lat: 30.898000,
       lng: 75.851000,
       gsm: 18
@@ -354,6 +373,7 @@ const RmsLogsView = (() => {
       kwh: 4544.477,
       flowRate: 0,
       moisture: 60.0,
+      tds: 330,
       lat: 30.900100,
       lng: 75.856000,
       gsm: 21
@@ -372,6 +392,7 @@ const RmsLogsView = (() => {
       kwh: 18533.006,
       flowRate: 0,
       moisture: 49.5,
+      tds: 380,
       lat: 28.164026,
       lng: 78.521861,
       gsm: 31
@@ -390,12 +411,35 @@ const RmsLogsView = (() => {
     return `${day}-${month}-${year} ${hours}:${minutes}:${seconds}`;
   };
 
+  // Build exact hardware JSON payload
+  const createHardwareJsonPayload = (row) => {
+    return {
+      device_id: String(row.rmsNo),
+      imei: String(row.imei),
+      device_name: row.name,
+      parcel: row.parcel,
+      power_status: row.power,
+      motor_status: row.motor,
+      fault_code: row.error,
+      voltage_v: row.voltage,
+      current_a: row.current,
+      frequency_hz: row.frequency,
+      flow_rate_lpm: row.flowRate,
+      kwh_calc: row.kwh,
+      soil_moisture_pct: row.moisture,
+      water_tds_ppm: row.tds,
+      gsm_csq: row.gsm,
+      latitude: row.lat,
+      longitude: row.lng,
+      log_timestamp: row.timestamp
+    };
+  };
+
   // Seed initial log history with timestamps descending
   const initializeLogs = () => {
     logsData = [];
     const now = new Date();
     
-    // Create 45 initial historical heartbeat packets
     for (let i = 0; i < 45; i++) {
       const devIndex = i % deviceMaster.length;
       const baseDev = deviceMaster[devIndex];
@@ -406,7 +450,7 @@ const RmsLogsView = (() => {
       const fJitter = baseDev.flowRate > 0 ? Math.floor(Math.random() * 10 - 5) : 0;
       const mJitter = (Math.random() * 0.4 - 0.2);
 
-      logsData.push({
+      const logRow = {
         id: `pkt-${Date.now()}-${i}`,
         sNo: i + 1,
         rmsNo: baseDev.rmsNo,
@@ -422,12 +466,15 @@ const RmsLogsView = (() => {
         kwh: +(baseDev.kwh + (i * 0.042)).toFixed(3),
         flowRate: Math.max(0, baseDev.flowRate + fJitter),
         moisture: +(baseDev.moisture + mJitter).toFixed(1),
+        tds: baseDev.tds,
         lat: baseDev.lat,
         lng: baseDev.lng,
         gsm: Math.min(31, Math.max(10, baseDev.gsm + Math.floor(Math.random() * 3 - 1))),
         timestamp: formatLogTimestamp(logTime),
         isNew: false
-      });
+      };
+
+      logsData.push(logRow);
     }
   };
 
@@ -457,6 +504,7 @@ const RmsLogsView = (() => {
       kwh: +(randomDev.kwh + (Math.random() * 0.05)).toFixed(3),
       flowRate: Math.max(0, randomDev.flowRate + fJitter),
       moisture: +(randomDev.moisture + mJitter).toFixed(1),
+      tds: randomDev.tds,
       lat: randomDev.lat,
       lng: randomDev.lng,
       gsm: Math.min(31, Math.max(10, randomDev.gsm + Math.floor(Math.random() * 3 - 1))),
@@ -506,7 +554,7 @@ const RmsLogsView = (() => {
     if (filtered.length === 0) {
       tbody.innerHTML = `
         <tr>
-          <td colspan="15" style="padding: 30px; text-align: center; color: var(--text-muted); font-size: 14px;">
+          <td colspan="18" style="padding: 30px; text-align: center; color: var(--text-muted); font-size: 14px;">
             🔍 No telemetry packets match the filter criteria.
           </td>
         </tr>
@@ -515,30 +563,28 @@ const RmsLogsView = (() => {
     }
 
     tbody.innerHTML = filtered.map((row) => {
-      // Motor error styling
       let errorBadge = `<span class="rms-badge-normal">00</span>`;
-      let errorTitle = 'Normal Operation';
+      let errorTitle = 'Normal Operation (00)';
       if (row.error === '04') {
         errorBadge = `<span class="rms-badge-warn">04</span>`;
-        errorTitle = 'Under-Voltage Protection Alert';
+        errorTitle = 'Under-Voltage Protection Alert (04)';
       } else if (row.error === '08') {
         errorBadge = `<span class="rms-badge-warn">08</span>`;
-        errorTitle = 'Dry Run Borewell Protection';
+        errorTitle = 'Dry Run Borewell Protection (08)';
       } else if (row.error === '09') {
         errorBadge = `<span class="rms-badge-danger">09</span>`;
-        errorTitle = 'Over-Current Thermal Alert';
+        errorTitle = 'Over-Current Thermal Alert (09)';
       } else if (row.error === '10') {
         errorBadge = `<span class="rms-badge-danger">10</span>`;
-        errorTitle = 'Phase Failure / Unbalance Detected';
+        errorTitle = 'Phase Failure / Unbalance Detected (10)';
       } else if (row.error === '14') {
         errorBadge = `<span class="rms-badge-danger">14</span>`;
-        errorTitle = 'Motor Stalled / Mechanical Jam';
+        errorTitle = 'Motor Stalled / Mechanical Jam (14)';
       } else if (row.error === '9999') {
         errorBadge = `<span class="rms-badge-offline">9999</span>`;
-        errorTitle = 'Node Offline / Standby Sleep';
+        errorTitle = 'Node Offline / Standby Sleep (9999)';
       }
 
-      // Signal indicator bar
       let gsmClass = 'signal-good';
       if (row.gsm < 15) gsmClass = 'signal-weak';
       else if (row.gsm < 22) gsmClass = 'signal-med';
@@ -548,7 +594,7 @@ const RmsLogsView = (() => {
       return `
         <tr class="${rowClass}" data-rms="${row.rmsNo}">
           <td class="rms-cell-center rms-cell-sno">${row.sNo}</td>
-          <td class="rms-cell-bold rms-cell-center rms-cell-unique">${row.rmsNo}</td>
+          <td class="rms-cell-bold rms-cell-center rms-cell-unique" title="${row.name}">${row.rmsNo}</td>
           <td class="rms-cell-mono rms-cell-imei">${row.imei}</td>
           <td class="rms-cell-center">
             <span class="${row.power === 1 ? 'rms-val-on' : 'rms-val-off'}">${row.power}</span>
@@ -562,16 +608,30 @@ const RmsLogsView = (() => {
           <td class="rms-cell-right rms-cell-numeric">${row.voltage.toFixed(2)}</td>
           <td class="rms-cell-right rms-cell-numeric">${row.current.toFixed(2)}</td>
           <td class="rms-cell-center rms-cell-numeric">${row.frequency}</td>
+          <td class="rms-cell-right rms-cell-numeric" style="color: #0284C7;">${row.flowRate}</td>
           <td class="rms-cell-right rms-cell-numeric rms-cell-kwh">${row.kwh.toFixed(3)}</td>
-          <td class="rms-cell-mono rms-cell-small">${row.lat.toFixed(6)}</td>
-          <td class="rms-cell-mono rms-cell-small">${row.lng.toFixed(6)}</td>
+          <td class="rms-cell-right rms-cell-numeric" style="color: var(--primary);">${row.moisture.toFixed(1)}%</td>
+          <td class="rms-cell-right rms-cell-numeric" style="color: #D97706;">${row.tds}</td>
           <td class="rms-cell-center">
             <span class="rms-gsm-pill ${gsmClass}" title="CSQ: ${row.gsm}/31">
               📶 ${row.gsm}
             </span>
           </td>
+          <td class="rms-cell-mono rms-cell-small" title="Latitude, Longitude">
+            ${row.lat.toFixed(5)}, ${row.lng.toFixed(5)}
+          </td>
           <td class="rms-cell-center rms-cell-mono rms-cell-time">
             ${row.timestamp}
+          </td>
+          <td class="rms-cell-center">
+            <button 
+              type="button" 
+              class="rms-json-btn" 
+              title="Inspect raw hardware JSON payload for Node #${row.rmsNo}"
+              onclick="RmsLogsView.openJsonModal('${row.id}')"
+            >
+              { } JSON
+            </button>
           </td>
           <td class="rms-cell-center">
             <button 
@@ -580,7 +640,7 @@ const RmsLogsView = (() => {
               title="Locate ${row.name} on GIS Map" 
               onclick="RmsLogsView.openMapModal('${row.rmsNo}', '${row.name}', '${row.parcel}', ${row.lat}, ${row.lng}, ${row.voltage}, ${row.current}, ${row.flowRate}, ${row.moisture}, ${row.power}, ${row.motor})"
             >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
               </svg>
             </button>
@@ -631,6 +691,138 @@ const RmsLogsView = (() => {
     }
 
     window.showToast(`Switched to ${currentTheme === 'dark' ? 'Industrial RMS Dark Theme' : 'SmartKisan Brand Colors'}`, 'info');
+  };
+
+  // Toggle Table Header Format (Hardware JSON Keys vs Standard Labels)
+  const toggleHeaderFormat = () => {
+    headerFormat = headerFormat === 'json' ? 'standard' : 'json';
+    localStorage.setItem('smartkisan_rms_hdr_fmt', headerFormat);
+    updateHeaderLabels();
+    const btnText = document.getElementById('rms-hdr-format-text');
+    if (btnText) {
+      btnText.textContent = headerFormat === 'json' ? 'Schema: JSON Keys' : 'Schema: Standard';
+    }
+    window.showToast(`Header Schema: ${headerFormat === 'json' ? 'Hardware JSON Keys' : 'Standard Labels'}`, 'info');
+  };
+
+  const updateHeaderLabels = () => {
+    const thead = document.getElementById('rms-data-thead');
+    if (!thead) return;
+
+    if (headerFormat === 'json') {
+      thead.innerHTML = `
+        <tr>
+          <th style="width: 48px;">s_no</th>
+          <th style="width: 85px;">device_id<span class="rms-header-key">RMS Node</span></th>
+          <th style="width: 135px;">imei<span class="rms-header-key">Modem ID</span></th>
+          <th style="width: 85px;">power_status<span class="rms-header-key">1 / 0</span></th>
+          <th style="width: 85px;">motor_status<span class="rms-header-key">1 / 0</span></th>
+          <th style="width: 80px;">fault_code<span class="rms-header-key">Error</span></th>
+          <th style="width: 85px;">voltage_v<span class="rms-header-key">Line V</span></th>
+          <th style="width: 80px;">current_a<span class="rms-header-key">Amps</span></th>
+          <th style="width: 75px;">frequency_hz<span class="rms-header-key">Hz</span></th>
+          <th style="width: 85px;">flow_rate_lpm<span class="rms-header-key">L/min</span></th>
+          <th style="width: 105px;">kwh_calc<span class="rms-header-key">Energy</span></th>
+          <th style="width: 95px;">soil_moisture_pct<span class="rms-header-key">Moisture</span></th>
+          <th style="width: 80px;">water_tds_ppm<span class="rms-header-key">TDS</span></th>
+          <th style="width: 85px;">gsm_csq<span class="rms-header-key">Signal</span></th>
+          <th style="width: 125px;">latitude, longitude<span class="rms-header-key">WGS-84</span></th>
+          <th style="width: 145px;">log_timestamp<span class="rms-header-key">Real-Time IST</span></th>
+          <th style="width: 75px;">raw_json<span class="rms-header-key">Inspect</span></th>
+          <th style="width: 55px;">map<span class="rms-header-key">Pin</span></th>
+        </tr>
+      `;
+    } else {
+      thead.innerHTML = `
+        <tr>
+          <th style="width: 48px;">S No.</th>
+          <th style="width: 85px;">RMS Unique No</th>
+          <th style="width: 135px;">IMEI No</th>
+          <th style="width: 85px;">Power Status</th>
+          <th style="width: 85px;">Motor Status</th>
+          <th style="width: 80px;">Motor Error</th>
+          <th style="width: 85px;">Voltage (V)</th>
+          <th style="width: 80px;">Current (A)</th>
+          <th style="width: 75px;">Frequency (Hz)</th>
+          <th style="width: 85px;">Discharge (L/min)</th>
+          <th style="width: 105px;">kWh (Calculated)</th>
+          <th style="width: 95px;">Soil Moisture (%)</th>
+          <th style="width: 80px;">Water TDS (ppm)</th>
+          <th style="width: 85px;">GSM Signal</th>
+          <th style="width: 125px;">Latitude, Longitude</th>
+          <th style="width: 145px;">Log Date Time</th>
+          <th style="width: 75px;">Payload</th>
+          <th style="width: 55px;">Map</th>
+        </tr>
+      `;
+    }
+  };
+
+  // Open Raw Hardware JSON Inspector Modal
+  const openJsonModal = (rowId) => {
+    const row = logsData.find(r => r.id === rowId);
+    if (!row) return;
+
+    const payload = createHardwareJsonPayload(row);
+    const jsonStr = JSON.stringify(payload, null, 2);
+
+    let modal = document.getElementById('rms-json-modal');
+    if (!modal) {
+      modal = document.createElement('div');
+      modal.id = 'rms-json-modal';
+      modal.className = 'rms-modal-backdrop';
+      document.body.appendChild(modal);
+    }
+
+    modal.innerHTML = `
+      <div class="rms-modal-dialog" style="max-width: 620px;">
+        <div class="rms-modal-header">
+          <div>
+            <div style="font-size: 11px; text-transform: uppercase; color: var(--primary); font-weight: 700; letter-spacing: 0.5px;">
+              Raw Hardware Telemetry Payload
+            </div>
+            <h3 style="margin: 2px 0 0; color: var(--text-main); font-size: 17px; font-weight: 700;">
+              Node #${row.rmsNo} (IMEI: ${row.imei})
+            </h3>
+            <div style="font-size: 12px; color: var(--text-muted);">
+              Received: ${row.timestamp} IST | Format: JSON Hardware Spec
+            </div>
+          </div>
+          <button type="button" class="rms-modal-close" onclick="RmsLogsView.closeJsonModal()">✕</button>
+        </div>
+
+        <div class="rms-modal-body">
+          <pre class="rms-json-pre" id="rms-raw-json-block">${jsonStr}</pre>
+        </div>
+
+        <div class="rms-modal-footer">
+          <button type="button" class="btn-refresh" onclick="RmsLogsView.closeJsonModal()">
+            Close
+          </button>
+          <button type="button" class="btn-primary" style="width: auto; padding: 8px 18px; font-size: 13px;" onclick="RmsLogsView.copyJsonToClipboard()">
+            📋 Copy JSON
+          </button>
+        </div>
+      </div>
+    `;
+
+    modal.style.display = 'flex';
+  };
+
+  const closeJsonModal = () => {
+    const modal = document.getElementById('rms-json-modal');
+    if (modal) modal.style.display = 'none';
+  };
+
+  const copyJsonToClipboard = () => {
+    const block = document.getElementById('rms-raw-json-block');
+    if (block) {
+      navigator.clipboard.writeText(block.textContent).then(() => {
+        window.showToast('Hardware JSON payload copied to clipboard!', 'success');
+      }).catch(() => {
+        window.showToast('JSON text selected for copying', 'info');
+      });
+    }
   };
 
   // Open interactive GIS Map Modal
@@ -755,10 +947,10 @@ const RmsLogsView = (() => {
   const exportCsv = () => {
     const rows = getFilteredLogs();
     const headers = [
-      'S.No', 'RMS Unique No', 'IMEI No', 'Device Name', 'Farm Parcel',
-      'Power Status', 'Motor Status', 'Motor Error Code', 'Voltage (V)',
-      'Current (A)', 'Frequency (Hz)', 'kWh (Calculated)', 'Flow Rate (L/min)',
-      'Soil Moisture (%)', 'Latitude', 'Longitude', 'GSM Signal (CSQ)', 'Log Date Time'
+      's_no', 'device_id', 'imei', 'device_name', 'farm_parcel',
+      'power_status', 'motor_status', 'fault_code', 'voltage_v',
+      'current_a', 'frequency_hz', 'flow_rate_lpm', 'kwh_calc',
+      'soil_moisture_pct', 'water_tds_ppm', 'gsm_csq', 'latitude', 'longitude', 'log_timestamp'
     ];
 
     const csvContent = [
@@ -775,12 +967,13 @@ const RmsLogsView = (() => {
         r.voltage,
         r.current,
         r.frequency,
-        r.kwh,
         r.flowRate,
+        r.kwh,
         r.moisture,
+        r.tds,
+        r.gsm,
         r.lat,
         r.lng,
-        r.gsm,
         `"${r.timestamp}"`
       ].join(','))
     ].join('\n');
@@ -789,7 +982,7 @@ const RmsLogsView = (() => {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.setAttribute('href', url);
-    link.setAttribute('download', `SmartKisan_RMS_Heartbeat_Logs_${new Date().toISOString().slice(0, 10)}.csv`);
+    link.setAttribute('download', `SmartKisan_RMS_Hardware_Logs_${new Date().toISOString().slice(0, 10)}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -805,7 +998,7 @@ const RmsLogsView = (() => {
       return `
         <div id="rms-view-root" class="rms-view-container rms-theme-${currentTheme}">
           <!-- View Header -->
-          <div class="dashboard-header" style="margin-bottom: 20px;">
+          <div class="dashboard-header" style="margin-bottom: 16px;">
             <div>
               <h1 class="welcome-title" style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
                 <span>📶</span>
@@ -821,6 +1014,10 @@ const RmsLogsView = (() => {
             </div>
 
             <div class="header-actions">
+              <button type="button" class="btn-refresh" id="btn-rms-hdr-format" title="Toggle column headers between hardware JSON schema keys and standard display labels">
+                <span>🔤</span>
+                <span id="rms-hdr-format-text">${headerFormat === 'json' ? 'Schema: JSON Keys' : 'Schema: Standard'}</span>
+              </button>
               <button type="button" class="btn-refresh" id="btn-rms-theme-toggle" title="Switch between SmartKisan Brand Colors and Industrial Dark Theme">
                 <span id="rms-theme-icon">${currentTheme === 'dark' ? '☀️' : '🌙'}</span>
                 <span id="rms-theme-label">${currentTheme === 'dark' ? 'SmartKisan Colors' : 'Industrial Dark'}</span>
@@ -831,8 +1028,8 @@ const RmsLogsView = (() => {
             </div>
           </div>
 
-          <!-- KPI Summary Strip matching Dashboard -->
-          <div class="kpi-grid" style="margin-bottom: 20px;">
+          <!-- KPI Summary Strip matching Dashboard (Edge-to-Edge 100% Width) -->
+          <div class="kpi-grid" style="margin-bottom: 16px;">
             <div class="kpi-card">
               <div class="kpi-icon-box blue"><span>📡</span></div>
               <div class="kpi-info">
@@ -870,8 +1067,8 @@ const RmsLogsView = (() => {
             </div>
           </div>
 
-          <!-- Main Table Card -->
-          <div class="card rms-card-container" style="padding: 0; overflow: hidden; margin-bottom: 24px;">
+          <!-- Main Table Card (100% Full Width Screen Fill) -->
+          <div class="card rms-card-container" style="padding: 0; overflow: hidden; margin-bottom: 24px; width: 100%;">
             <!-- Toolbar Actions -->
             <div class="rms-card-toolbar">
               <div class="rms-search-wrap">
@@ -880,7 +1077,7 @@ const RmsLogsView = (() => {
                   type="text" 
                   id="rms-search-input" 
                   class="rms-search-field" 
-                  placeholder="Search IMEI, RMS Unique No, Node Name, or Parcel..." 
+                  placeholder="Search IMEI, Device ID, Node Name, or Parcel..." 
                   value="${searchQuery}"
                 />
               </div>
@@ -904,27 +1101,11 @@ const RmsLogsView = (() => {
               </div>
             </div>
 
-            <!-- RMS Table Outer & Scroll -->
-            <div class="rms-table-scroll-wrap">
-              <table class="rms-data-table">
-                <thead>
-                  <tr>
-                    <th style="width: 50px;">S No.</th>
-                    <th style="width: 95px;">RMS Unique No</th>
-                    <th style="width: 140px;">IMEI No</th>
-                    <th style="width: 80px;">Power Status</th>
-                    <th style="width: 80px;">Motor Status</th>
-                    <th style="width: 80px;">Motor Error</th>
-                    <th style="width: 95px;">Voltage</th>
-                    <th style="width: 85px;">Current</th>
-                    <th style="width: 80px;">Frequency</th>
-                    <th style="width: 120px;">kWh (Calculated)</th>
-                    <th style="width: 105px;">Latitude</th>
-                    <th style="width: 105px;">Longitude</th>
-                    <th style="width: 95px;">GSM Signal</th>
-                    <th style="width: 155px;">Log Date Time</th>
-                    <th style="width: 65px;">Map</th>
-                  </tr>
+            <!-- RMS Table Outer & Full Width Scroll -->
+            <div class="rms-table-scroll-wrap" style="width: 100%;">
+              <table class="rms-data-table" style="width: 100%;">
+                <thead id="rms-data-thead">
+                  <!-- Populated by updateHeaderLabels -->
                 </thead>
                 <tbody id="rms-logs-tbody">
                   <!-- Populated by renderTableBody -->
@@ -937,6 +1118,7 @@ const RmsLogsView = (() => {
     },
 
     mount() {
+      updateHeaderLabels();
       renderTableBody();
       updateLiveMetrics();
 
@@ -983,6 +1165,11 @@ const RmsLogsView = (() => {
         themeToggleBtn.addEventListener('click', toggleTheme);
       }
 
+      const hdrFormatBtn = document.getElementById('btn-rms-hdr-format');
+      if (hdrFormatBtn) {
+        hdrFormatBtn.addEventListener('click', toggleHeaderFormat);
+      }
+
       const exportBtn = document.getElementById('btn-rms-export');
       if (exportBtn) {
         exportBtn.addEventListener('click', exportCsv);
@@ -1005,11 +1192,16 @@ const RmsLogsView = (() => {
         streamTimer = null;
       }
       closeMapModal();
+      closeJsonModal();
     },
 
     openMapModal,
     closeMapModal,
-    toggleTheme
+    openJsonModal,
+    closeJsonModal,
+    copyJsonToClipboard,
+    toggleTheme,
+    toggleHeaderFormat
   };
 
   function startLiveStream() {

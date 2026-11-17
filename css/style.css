@@ -2070,10 +2070,11 @@ button {
 
 .rms-view-container {
   width: 100%;
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 24px 20px;
+  max-width: 100%;
+  margin: 0;
+  padding: 16px 20px;
   min-height: calc(100vh - 68px);
+  box-sizing: border-box;
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
@@ -2614,4 +2615,64 @@ button {
   display: flex;
   justify-content: flex-end;
   gap: 10px;
+}
+
+
+/* ── Raw Hardware JSON Inspector ── */
+.rms-json-btn {
+  background: #F1F5F9;
+  color: #0F172A;
+  border: 1px solid #CBD5E1;
+  padding: 3px 7px;
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  transition: all 0.15s ease;
+}
+
+.rms-json-btn:hover {
+  background: var(--primary-50);
+  color: var(--primary);
+  border-color: var(--primary);
+}
+
+.rms-theme-dark .rms-json-btn {
+  background: #1E293B;
+  color: #38BDF8;
+  border-color: #334155;
+}
+
+.rms-theme-dark .rms-json-btn:hover {
+  background: #0284C7;
+  color: #FFFFFF;
+}
+
+.rms-json-pre {
+  background: #0F172A;
+  color: #38BDF8;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  font-size: 12px;
+  line-height: 1.5;
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid #1E293B;
+  max-height: 380px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.rms-header-key {
+  display: block;
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.7);
+  font-family: monospace;
+  font-weight: 400;
+  letter-spacing: 0;
+  margin-top: 2px;
 }
