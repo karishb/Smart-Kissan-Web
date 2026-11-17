@@ -2,11 +2,14 @@
  * SmartKisan Web Platform - AI Irrigation & Precision Advisory Module
  * Route: #/ai-advisory
  * Live Open-Meteo Satellite Agromet Telemetry,
- * FAO-56 Penman-Monteith Evapotranspiration (ET0), Crop Water Budget & 7-Day Precision Agrochemical Spraying Planner
+ * FAO-56 Penman-Monteith Evapotranspiration (ET0), Crop Water Budget, 7-Day Spraying Planner,
+ * and Farmer WhatsApp & SMS Advisory Broadcast Engine
  */
 
 const AiAdvisoryView = {
-  activeTab: 'budget', // 'budget' | 'spray' | 'overrides'
+  activeTab: 'budget', // 'budget' | 'spray' | 'overrides' | 'broadcast'
+  broadcastLang: 'hi', // 'hi' | 'en'
+  broadcastChannel: 'wa', // 'wa' | 'sms'
   recInterval: null,
   isLiveFeed: false,
 
@@ -114,6 +117,10 @@ const AiAdvisoryView = {
           </div>
 
           <div class="header-actions">
+            <button type="button" class="btn-whatsapp-pill" id="btn-quick-whatsapp">
+              <span>📲</span>
+              <span>Share via WhatsApp</span>
+            </button>
             <button type="button" class="btn-refresh" id="btn-recalculate-ai">
               <span id="recalc-spin-icon">⚡</span>
               <span>Recalculate AI Model</span>
@@ -177,6 +184,10 @@ const AiAdvisoryView = {
           <button type="button" class="ai-tab-btn" data-tab="overrides">
             <span>⚡</span>
             <span>Smart Irrigation Overrides</span>
+          </button>
+          <button type="button" class="ai-tab-btn" data-tab="broadcast">
+            <span>📲</span>
+            <span>Farmer WhatsApp & SMS</span>
           </button>
         </div>
 
@@ -296,6 +307,156 @@ const AiAdvisoryView = {
                 </div>
 
               </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- TAB 4: Farmer WhatsApp & SMS Advisory Broadcast Studio -->
+        <div class="ai-tab-pane" id="pane-broadcast" style="display: none;">
+          
+          <div class="broadcast-studio-grid">
+            
+            <!-- Left: Configuration & Dispatch Controls -->
+            <div class="broadcast-config-card">
+              <div class="panel-title" style="margin-bottom: 16px;">
+                <span>📲</span>
+                <span>Farmer Advisory Broadcast Studio</span>
+              </div>
+              <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 20px;">
+                Automatically compiles live agromet weather, parcel moisture deficits, and safe spray windows into ready-to-dispatch WhatsApp & Kisan SMS formats.
+              </p>
+
+              <!-- Channel Selector -->
+              <div class="broadcast-form-section">
+                <label class="broadcast-form-label">Broadcast Channel:</label>
+                <div class="channel-selector-row">
+                  <button type="button" class="channel-pill-btn wa active" data-bchannel="wa">
+                    <span>💬</span>
+                    <span>WhatsApp Broadcast</span>
+                  </button>
+                  <button type="button" class="channel-pill-btn" data-bchannel="sms">
+                    <span>📨</span>
+                    <span>Kisan SMS (160 GSM)</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Language Selector -->
+              <div class="broadcast-form-section">
+                <label class="broadcast-form-label">Advisory Language:</label>
+                <div style="display: flex; gap: 8px;">
+                  <button type="button" class="map-filter-chip active" data-blang="hi">हिन्दी (Hindi)</button>
+                  <button type="button" class="map-filter-chip" data-blang="en">English</button>
+                </div>
+              </div>
+
+              <!-- Recipient Selector -->
+              <div class="broadcast-form-section">
+                <label class="broadcast-form-label">Target Recipient Group:</label>
+                <select class="form-input" id="select-broadcast-recipient">
+                  <option value="all">Punjab Kisan Cooperative Group #4 (28 Farmers)</option>
+                  <option value="c-1">Ramesh Kumar (Farm Manager - +91 98765 43210)</option>
+                  <option value="c-2">Gurpreet Singh (Pump Operator - +91 98123 45678)</option>
+                  <option value="c-3">Harpreet Kaur (Agronomist - +91 98456 78901)</option>
+                  <option value="custom">Custom Recipient Number</option>
+                </select>
+                <input 
+                  type="text" 
+                  class="form-input" 
+                  id="input-custom-phone" 
+                  placeholder="+91 98765 00000" 
+                  style="display: none; margin-top: 8px;" 
+                />
+              </div>
+
+              <!-- Action Buttons -->
+              <div class="broadcast-actions-box">
+                <button type="button" class="btn-whatsapp-pill" id="btn-dispatch-whatsapp" style="flex: 1;">
+                  <span>📲</span>
+                  <span>Send via WhatsApp</span>
+                </button>
+                <button type="button" class="btn-primary" id="btn-dispatch-sms" style="flex: 1; display: none;">
+                  <span>📨</span>
+                  <span>Dispatch Kisan SMS</span>
+                </button>
+                <button type="button" class="btn-outline" id="btn-copy-broadcast" style="padding: 10px 16px;">
+                  <span>📋</span>
+                  <span>Copy Text</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Right: Real-Time Phone Chat Mockup -->
+            <div>
+              <div style="font-size: 13px; font-weight: 700; color: var(--text-muted); margin-bottom: 8px;">
+                LIVE RECIPIENT PREVIEW:
+              </div>
+
+              <!-- WhatsApp Chat Mockup -->
+              <div class="whatsapp-chat-mockup" id="mockup-whatsapp">
+                <div class="whatsapp-mockup-header">
+                  <div class="whatsapp-avatar">🌱</div>
+                  <div>
+                    <div class="whatsapp-header-title">SmartKisan Agro Advisory</div>
+                    <div class="whatsapp-header-sub">Online • Automated Broadcast</div>
+                  </div>
+                </div>
+
+                <div class="whatsapp-chat-body">
+                  <div class="whatsapp-bubble" id="whatsapp-bubble-text">
+                    Loading advisory preview...
+                  </div>
+                  <div class="whatsapp-bubble-time">
+                    <span>Just now</span>
+                    <span style="color: #53BDEB; font-weight: bold;">✓✓</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- SMS Mockup (shown when SMS channel is active) -->
+              <div class="sms-mockup-card" id="mockup-sms" style="display: none;">
+                <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                  <strong style="font-size:12px; color:var(--text-muted);">GOVT OF INDIA / MKISAN GATEWAY</strong>
+                  <span style="font-size:11px; color:var(--primary); font-weight:600;">TRANS-ID: 789412</span>
+                </div>
+                <div class="sms-bubble" id="sms-bubble-text">
+                  Loading SMS preview...
+                </div>
+                <div class="sms-meta-row">
+                  <span id="sms-char-counter">0 / 160 Characters</span>
+                  <span>1 SMS Segment (Standard GSM-7)</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Broadcast History Audit Log -->
+          <div class="dash-panel">
+            <div class="panel-header">
+              <div class="panel-title">
+                <span>📋</span>
+                <span>Recent Advisory Broadcasts & Delivery Receipts</span>
+              </div>
+              <span class="panel-action">Live Gateway Telemetry</span>
+            </div>
+
+            <div style="padding: 0 20px 20px;">
+              <table class="broadcast-log-table">
+                <thead>
+                  <tr>
+                    <th>Timestamp</th>
+                    <th>Channel</th>
+                    <th>Recipient</th>
+                    <th>Message Snippet</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="broadcast-logs-tbody">
+                  <!-- Populated dynamically -->
+                </tbody>
+              </table>
             </div>
           </div>
 
@@ -443,10 +604,48 @@ const AiAdvisoryView = {
     }).join('');
   },
 
+  updateBroadcastPreview() {
+    if (!window.BroadcastService) return;
+
+    const waText = window.BroadcastService.generateWhatsAppText(this.broadcastLang, this.farmMetrics, this.parcels);
+    const smsText = window.BroadcastService.generateSmsText(this.broadcastLang, this.farmMetrics);
+
+    const waBubble = document.getElementById('whatsapp-bubble-text');
+    if (waBubble) {
+      waBubble.textContent = waText;
+    }
+
+    const smsBubble = document.getElementById('sms-bubble-text');
+    const smsCounter = document.getElementById('sms-char-counter');
+    if (smsBubble) {
+      smsBubble.textContent = smsText;
+    }
+    if (smsCounter) {
+      smsCounter.textContent = `${smsText.length} / 160 Characters`;
+    }
+
+    // Update Logs Table
+    const logsTbody = document.getElementById('broadcast-logs-tbody');
+    if (logsTbody && window.BroadcastService.getBroadcastLogs) {
+      const logs = window.BroadcastService.getBroadcastLogs();
+      logsTbody.innerHTML = logs.map(l => `
+        <tr>
+          <td><span style="font-weight:600;">${l.timestamp}</span></td>
+          <td><span class="badge ${l.channel === 'WhatsApp' ? 'status-dot active' : ''}">${l.channel}</span></td>
+          <td><strong>${l.recipient}</strong></td>
+          <td style="color:var(--text-muted); font-size:12px;">${l.snippet}</td>
+          <td><span style="color:var(--success); font-weight:700;">✓ ${l.status}</span></td>
+        </tr>
+      `).join('');
+    }
+  },
+
   async mount() {
     this.bindTabs();
     this.bindActions();
+    this.bindBroadcastEvents();
     await this.loadLiveWeather();
+    this.updateBroadcastPreview();
   },
 
   async loadLiveWeather(forceRefresh = false) {
@@ -463,7 +662,6 @@ const AiAdvisoryView = {
         this.farmMetrics.solarRad = weather.current.solarRadiation || 19.2;
         this.sprayPlanner = weather.daily || [];
 
-        // Update DOM elements cleanly
         const statusEl = document.getElementById('ai-feed-status');
         if (statusEl) {
           statusEl.textContent = weather.isLive 
@@ -487,15 +685,14 @@ const AiAdvisoryView = {
           formulaEl.textContent = `Crop Water Requirement (ET_c) = Reference Evapotranspiration (ET_0: ${this.farmMetrics.et0} mm) × Crop Coefficient (K_c)`;
         }
 
-        // Re-render dynamic parcel cards and spray planner cards
         const parcelsCont = document.getElementById('advisory-parcels-container');
         if (parcelsCont) parcelsCont.innerHTML = this.renderParcelsHtml();
 
         const sprayCont = document.getElementById('spray-cards-container');
         if (sprayCont) sprayCont.innerHTML = this.renderSprayHtml();
 
-        // Re-attach card button listeners
         this.bindCardActions();
+        this.updateBroadcastPreview();
       }
     } catch (err) {
       console.warn('AiAdvisoryView live weather load error:', err);
@@ -509,20 +706,136 @@ const AiAdvisoryView = {
         const target = btn.getAttribute('data-tab');
         this.activeTab = target;
 
-        // Update tab buttons
         tabs.forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
 
-        // Toggle panes
         const pBudget = document.getElementById('pane-budget');
         const pSpray = document.getElementById('pane-spray');
         const pOverrides = document.getElementById('pane-overrides');
+        const pBroadcast = document.getElementById('pane-broadcast');
 
         if (pBudget) pBudget.style.display = target === 'budget' ? 'block' : 'none';
         if (pSpray) pSpray.style.display = target === 'spray' ? 'block' : 'none';
         if (pOverrides) pOverrides.style.display = target === 'overrides' ? 'block' : 'none';
+        if (pBroadcast) pBroadcast.style.display = target === 'broadcast' ? 'block' : 'none';
+
+        if (target === 'broadcast') {
+          this.updateBroadcastPreview();
+        }
       });
     });
+  },
+
+  bindBroadcastEvents() {
+    // Channel Switchers (WhatsApp vs SMS)
+    document.querySelectorAll('[data-bchannel]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const ch = btn.getAttribute('data-bchannel');
+        this.broadcastChannel = ch;
+        document.querySelectorAll('[data-bchannel]').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        const waMockup = document.getElementById('mockup-whatsapp');
+        const smsMockup = document.getElementById('mockup-sms');
+        const btnWa = document.getElementById('btn-dispatch-whatsapp');
+        const btnSms = document.getElementById('btn-dispatch-sms');
+
+        if (ch === 'wa') {
+          if (waMockup) waMockup.style.display = 'flex';
+          if (smsMockup) smsMockup.style.display = 'none';
+          if (btnWa) btnWa.style.display = 'inline-flex';
+          if (btnSms) btnSms.style.display = 'none';
+        } else {
+          if (waMockup) waMockup.style.display = 'none';
+          if (smsMockup) smsMockup.style.display = 'flex';
+          if (btnWa) btnWa.style.display = 'none';
+          if (btnSms) btnSms.style.display = 'inline-flex';
+        }
+      });
+    });
+
+    // Language Selector Chips (Hindi vs English)
+    document.querySelectorAll('[data-blang]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const lang = btn.getAttribute('data-blang');
+        this.broadcastLang = lang;
+        document.querySelectorAll('[data-blang]').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        this.updateBroadcastPreview();
+      });
+    });
+
+    // Recipient Dropdown Handler
+    const recipSelect = document.getElementById('select-broadcast-recipient');
+    const customPhoneInput = document.getElementById('input-custom-phone');
+    if (recipSelect && customPhoneInput) {
+      recipSelect.addEventListener('change', () => {
+        customPhoneInput.style.display = recipSelect.value === 'custom' ? 'block' : 'none';
+      });
+    }
+
+    // 1-Click WhatsApp Launch Button
+    const waDispatchBtn = document.getElementById('btn-dispatch-whatsapp');
+    if (waDispatchBtn) {
+      waDispatchBtn.addEventListener('click', () => {
+        if (!window.BroadcastService) return;
+        const msg = window.BroadcastService.generateWhatsAppText(this.broadcastLang, this.farmMetrics, this.parcels);
+        let phone = '';
+        if (recipSelect && recipSelect.value === 'c-1') phone = '+919876543210';
+        if (recipSelect && recipSelect.value === 'c-2') phone = '+919812345678';
+        if (recipSelect && recipSelect.value === 'c-3') phone = '+919845678901';
+        if (recipSelect && recipSelect.value === 'custom' && customPhoneInput) phone = customPhoneInput.value;
+
+        window.BroadcastService.openWhatsApp(msg, phone);
+        window.BroadcastService.saveLog({
+          id: `log-${Date.now()}`,
+          timestamp: 'Just now',
+          channel: 'WhatsApp',
+          recipient: recipSelect ? recipSelect.options[recipSelect.selectedIndex].text : 'Farmer Group',
+          status: 'Opened',
+          snippet: msg.substring(0, 60) + '...'
+        });
+        window.showToast('WhatsApp launched with daily advisory!', 'success');
+        this.updateBroadcastPreview();
+      });
+    }
+
+    // Simulated SMS Dispatch Button
+    const smsDispatchBtn = document.getElementById('btn-dispatch-sms');
+    if (smsDispatchBtn) {
+      smsDispatchBtn.addEventListener('click', async () => {
+        if (!window.BroadcastService) return;
+        const msg = window.BroadcastService.generateSmsText(this.broadcastLang, this.farmMetrics);
+        smsDispatchBtn.disabled = true;
+        smsDispatchBtn.innerHTML = '<span>⏳</span><span>Dispatching SMS Gateway...</span>';
+
+        await window.BroadcastService.dispatchSimulatedSms('Cooperative Farmer Group', '+91 98123 00000', msg);
+
+        smsDispatchBtn.disabled = false;
+        smsDispatchBtn.innerHTML = '<span>📨</span><span>Dispatch Kisan SMS</span>';
+        window.showToast('Kisan SMS successfully dispatched via national gateway!', 'success');
+        this.updateBroadcastPreview();
+      });
+    }
+
+    // Copy Text Button
+    const copyBtn = document.getElementById('btn-copy-broadcast');
+    if (copyBtn) {
+      copyBtn.addEventListener('click', () => {
+        if (!window.BroadcastService) return;
+        const text = this.broadcastChannel === 'wa'
+          ? window.BroadcastService.generateWhatsAppText(this.broadcastLang, this.farmMetrics, this.parcels)
+          : window.BroadcastService.generateSmsText(this.broadcastLang, this.farmMetrics);
+
+        if (navigator.clipboard) {
+          navigator.clipboard.writeText(text).then(() => {
+            window.showToast('Advisory text copied to clipboard!', 'info');
+          });
+        } else {
+          window.showToast('Text copied.', 'info');
+        }
+      });
+    }
   },
 
   bindCardActions() {
@@ -555,7 +868,18 @@ const AiAdvisoryView = {
   bindActions() {
     this.bindCardActions();
 
-    // Recalculate AI Model Button (triggers live API fetch)
+    // Quick WhatsApp Share in Header
+    const quickWaBtn = document.getElementById('btn-quick-whatsapp');
+    if (quickWaBtn) {
+      quickWaBtn.addEventListener('click', () => {
+        if (!window.BroadcastService) return;
+        const msg = window.BroadcastService.generateWhatsAppText('hi', this.farmMetrics, this.parcels);
+        window.BroadcastService.openWhatsApp(msg, '');
+        window.showToast('WhatsApp launched with Hindi advisory message!', 'success');
+      });
+    }
+
+    // Recalculate AI Model Button
     const recalcBtn = document.getElementById('btn-recalculate-ai');
     const spinIcon = document.getElementById('recalc-spin-icon');
     if (recalcBtn) {

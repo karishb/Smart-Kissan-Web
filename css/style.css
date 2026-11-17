@@ -1833,3 +1833,231 @@ button {
   line-height: 1.45;
   flex: 1;
 }
+
+
+/* ============================================================
+   Farmer WhatsApp & SMS Advisory Broadcast Studio Styles
+   ============================================================ */
+
+.btn-whatsapp-pill {
+  background: #25D366;
+  color: #FFFFFF !important;
+  font-weight: 700;
+  font-size: 13px;
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(37, 211, 102, 0.35);
+  transition: var(--transition);
+}
+
+.btn-whatsapp-pill:hover {
+  background: #1EBE5D;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(37, 211, 102, 0.45);
+}
+
+.broadcast-studio-grid {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: 24px;
+  margin-bottom: 30px;
+}
+
+@media (max-width: 900px) {
+  .broadcast-studio-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.broadcast-config-card {
+  background: #FFFFFF;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  box-shadow: var(--shadow-sm);
+}
+
+.broadcast-form-section {
+  margin-bottom: 20px;
+}
+
+.broadcast-form-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-main);
+  margin-bottom: 8px;
+  display: block;
+}
+
+.channel-selector-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.channel-pill-btn {
+  flex: 1;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  background: var(--bg-card-subtle);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: var(--transition);
+}
+
+.channel-pill-btn.active {
+  background: #E8F5E9;
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.channel-pill-btn.wa.active {
+  background: #E7F9EE;
+  border-color: #25D366;
+  color: #128C7E;
+}
+
+/* WhatsApp Phone & Mockup Chat Styling */
+.whatsapp-chat-mockup {
+  background: #E5DDD5;
+  border-radius: var(--radius-lg);
+  border: 1px solid #D1D7DB;
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.whatsapp-mockup-header {
+  background: #075E54;
+  color: #FFFFFF;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.whatsapp-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: #25D366;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  border: 1.5px solid white;
+}
+
+.whatsapp-header-title {
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.whatsapp-header-sub {
+  font-size: 11px;
+  opacity: 0.85;
+}
+
+.whatsapp-chat-body {
+  padding: 16px;
+  min-height: 260px;
+  background-image: radial-gradient(#CBD5E1 1px, transparent 1px);
+  background-size: 16px 16px;
+}
+
+.whatsapp-bubble {
+  background: #DCF8C6;
+  border-radius: 8px;
+  border-top-left-radius: 0;
+  padding: 12px 14px;
+  font-size: 13px;
+  color: #111B21;
+  line-height: 1.5;
+  position: relative;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.12);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.whatsapp-bubble-time {
+  font-size: 10px;
+  color: #667781;
+  text-align: right;
+  margin-top: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+}
+
+.sms-mockup-card {
+  background: #FFFFFF;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 18px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+}
+
+.sms-bubble {
+  background: #F1F5F9;
+  border-radius: 12px;
+  padding: 14px;
+  font-size: 13px;
+  color: #1E293B;
+  line-height: 1.45;
+  margin-bottom: 10px;
+  font-family: monospace;
+}
+
+.sms-meta-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.broadcast-actions-box {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+
+.broadcast-log-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  margin-top: 12px;
+}
+
+.broadcast-log-table th {
+  background: var(--bg-card-subtle);
+  padding: 10px 14px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.broadcast-log-table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-main);
+}

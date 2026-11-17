@@ -3,7 +3,7 @@
  * Ensures seamless offline operation in rural agricultural belts with intermittent cellular coverage.
  */
 
-const CACHE_NAME = 'smartkisan-pwa-v1.3';
+const CACHE_NAME = 'smartkisan-pwa-v1.4';
 const ASSETS_TO_CACHE = [
   './',
   'index.html',
@@ -14,6 +14,7 @@ const ASSETS_TO_CACHE = [
   'js/api.js',
   'js/auth.js',
   'js/weather.js',
+  'js/broadcast.js',
   'js/socket.js',
   'js/router.js',
   'js/app.js',
@@ -55,7 +56,6 @@ self.addEventListener('activate', (event) => {
 
 // Fetch: Network-First with Cache Fallback for maximum freshness & offline reliability
 self.addEventListener('fetch', (event) => {
-  // Only handle GET requests
   if (event.request.method !== 'GET') return;
 
   const url = new URL(event.request.url);
@@ -68,7 +68,6 @@ self.addEventListener('fetch', (event) => {
   event.respondWith(
     fetch(event.request)
       .then((networkResponse) => {
-        // Clone and store fresh copy in cache
         if (networkResponse && networkResponse.status === 200) {
           const responseToCache = networkResponse.clone();
           caches.open(CACHE_NAME).then((cache) => {
@@ -78,13 +77,11 @@ self.addEventListener('fetch', (event) => {
         return networkResponse;
       })
       .catch(async () => {
-        // Network unavailable: retrieve from offline cache
         const cachedResponse = await caches.match(event.request);
         if (cachedResponse) {
           return cachedResponse;
         }
 
-        // Fallback to index.html for SPA client-side routing
         if (event.request.mode === 'navigate') {
           return caches.match('./') || caches.match('index.html');
         }
