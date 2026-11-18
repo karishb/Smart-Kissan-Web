@@ -245,6 +245,13 @@ button {
   padding: 24px 20px 48px;
 }
 
+#app.app-full-width,
+#app:has(.rms-view-container) {
+  max-width: 100% !important;
+  margin: 0 !important;
+  padding: 12px 14px 32px !important;
+}
+
 /* ============================================================
    Auth Pages (Login & Register)
    ============================================================ */
@@ -2072,7 +2079,7 @@ button {
   width: 100%;
   max-width: 100%;
   margin: 0;
-  padding: 16px 20px;
+  padding: 4px 6px;
   min-height: calc(100vh - 68px);
   box-sizing: border-box;
   transition: background-color 0.3s ease, color 0.3s ease;
