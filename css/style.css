@@ -146,19 +146,20 @@ button {
 .nav-menu {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 10px;
   list-style: none;
 }
 
 .nav-link {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
   color: var(--text-muted);
-  padding: 8px 14px;
+  padding: 6px 10px;
   border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
+  white-space: nowrap;
 }
 
 .nav-link:hover, .nav-link.active {
@@ -2683,3 +2684,67 @@ button {
   letter-spacing: 0;
   margin-top: 2px;
 }
+
+/* ============================================================
+   Fertilizer Calculator & Govt Schemes Styling
+   ============================================================ */
+.btn-crop-select {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-crop-select:hover {
+  transform: translateY(-1px);
+  border-color: #10B981 !important;
+  color: #10B981 !important;
+}
+
+.btn-crop-select.active {
+  background: #10B981 !important;
+  border-color: #10B981 !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+}
+
+.btn-schemes-cat {
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.btn-schemes-cat:hover {
+  border-color: #2563EB !important;
+  color: #2563EB !important;
+}
+
+.btn-schemes-cat.active {
+  background: #2563EB !important;
+  border-color: #2563EB !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+}
+
+.scheme-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.scheme-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+}
+
+@media print {
+  body {
+    background: #FFFFFF !important;
+    color: #000000 !important;
+  }
+  .navbar, .header-actions, .btn-primary, .btn-schemes-cat, .btn-crop-select, #fertilizer-calc-form, #schemes-search-bar {
+    display: none !important;
+  }
+  .card {
+    border: 1px solid #CCCCCC !important;
+    box-shadow: none !important;
+  }
+}
+

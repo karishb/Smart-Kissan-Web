@@ -50,7 +50,9 @@ const I18N = (() => {
       overrides: 'AI Overrides',
       safe: 'Safe Window',
       marginal: 'Marginal',
-      unsafe: 'Unsafe'
+      unsafe: 'Unsafe',
+      fertilizer: 'Fertilizer Calculator',
+      schemes: 'Govt Schemes'
     },
     hi: {
       appName: 'स्मार्ट किसान',
@@ -96,7 +98,9 @@ const I18N = (() => {
       overrides: 'एआई नियंत्रण',
       safe: 'सुरक्षित समय',
       marginal: 'सावधानीपूर्वक',
-      unsafe: 'असुरक्षित'
+      unsafe: 'असुरक्षित',
+      fertilizer: 'उर्वरक कैलकुलेटर',
+      schemes: 'सरकारी योजनाएं'
     }
   };
 

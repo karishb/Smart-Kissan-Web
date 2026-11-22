@@ -95,6 +95,18 @@ const App = (() => {
               <span>${I18N.t('rmsLogs')}</span>
             </a>
           </li>
+          <li>
+            <a href="#/fertilizer" class="nav-link">
+              <span>🧪</span>
+              <span>${I18N.t('fertilizer')}</span>
+            </a>
+          </li>
+          <li>
+            <a href="#/schemes" class="nav-link">
+              <span>🏛️</span>
+              <span>${I18N.t('schemes')}</span>
+            </a>
+          </li>
         `;
       }
 
@@ -168,9 +180,16 @@ const App = (() => {
     Router.init();
   };
 
+  const refreshView = () => {
+    if (window.Router) {
+      window.Router.navigate();
+    }
+  };
+
   return {
     init,
-    updateNavbar
+    updateNavbar,
+    refreshView
   };
 })();
 
