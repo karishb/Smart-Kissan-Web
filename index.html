@@ -27,27 +27,117 @@
 </head>
 <body>
 
-  <!-- Top Navigation Bar -->
-  <header class="navbar">
-    <div style="display: flex; align-items: center; gap: 12px;">
-      <button type="button" class="nav-mobile-toggle" id="btn-nav-mobile-toggle" aria-label="Toggle navigation menu">
-        <span>☰</span>
-      </button>
-      <a href="#/dashboard" class="nav-brand">
-        <div class="brand-icon">🌱</div>
-        <div style="display: flex; align-items: center;">
-          <span class="brand-name">SmartKisan</span>
-          <span class="brand-tag">WEB PORTAL</span>
+  <!-- Top Dual-Tier Header (HubSpot Architecture) -->
+  <header class="app-header">
+    <!-- Tier 1: Utility & Preferences Sub-Bar -->
+    <div class="header-utility-bar">
+      <div class="utility-container">
+        <div class="utility-left">
+          <!-- Language Selector Dropdown -->
+          <div class="utility-item utility-dropdown" id="util-lang-dropdown">
+            <button type="button" class="utility-link" id="btn-util-lang-trigger">
+              <span class="util-icon">🌐</span>
+              <span id="util-current-lang-text">English</span>
+              <span class="util-chevron">▾</span>
+            </button>
+            <div class="utility-dropdown-menu" id="util-lang-menu">
+              <button type="button" class="util-menu-item" data-lang="en">English (US)</button>
+              <button type="button" class="util-menu-item" data-lang="hi">हिन्दी (Hindi)</button>
+            </div>
+          </div>
+
+          <!-- High Contrast / Theme Toggle -->
+          <div class="utility-item">
+            <label class="utility-toggle" id="btn-util-theme-toggle" title="Toggle High Contrast / Dark Theme">
+              <input type="checkbox" id="check-util-theme" />
+              <span class="toggle-slider"></span>
+              <span class="utility-text">High Contrast</span>
+            </label>
+          </div>
+
+          <!-- Live Hardware Gateway Status -->
+          <div class="utility-item utility-gateway-status">
+            <span class="gateway-dot"></span>
+            <span class="utility-text">RMS Gateway: <strong>100% Online (4.5s)</strong></span>
+          </div>
+
+          <!-- Farm Region / Weather pill -->
+          <div class="utility-item utility-weather-pill">
+            <span class="util-icon">📍</span>
+            <span class="utility-text">Ludhiana, Punjab • 18.6°C</span>
+          </div>
         </div>
-      </a>
+
+        <div class="utility-right">
+          <!-- Live Telemetry Sync Action -->
+          <button type="button" class="utility-link" id="btn-util-sync-telemetry" title="Sync Live Telemetry">
+            <span class="util-icon">🔄</span>
+            <span>Sync Telemetry</span>
+          </button>
+
+          <!-- Farm Preferences Modal Trigger -->
+          <button type="button" class="utility-link" id="btn-util-farm-settings">
+            <span class="util-icon">⚙️</span>
+            <span>Preferences</span>
+          </button>
+
+          <!-- User Account Dropdown -->
+          <div class="utility-item utility-dropdown" id="util-user-dropdown">
+            <button type="button" class="utility-link" id="btn-util-user-trigger">
+              <span class="util-user-avatar" id="util-user-avatar">R</span>
+              <span class="utility-text" id="util-user-name">Farmer Ramesh</span>
+              <span class="util-chevron">▾</span>
+            </button>
+            <div class="utility-dropdown-menu utility-dropdown-right" id="util-user-menu">
+              <div class="util-user-header">
+                <strong id="util-dropdown-user-name">Farmer Ramesh</strong>
+                <small id="util-dropdown-user-email">farmer.ramesh@smartkisan.in</small>
+              </div>
+              <div class="util-menu-divider"></div>
+              <button type="button" class="util-menu-item" id="btn-menu-farm-settings">⚙️ Farm Configuration</button>
+              <a href="#/reports" class="util-menu-item">📑 DSR & Daily Audits</a>
+              <a href="#/rms-logs" class="util-menu-item">📶 Live Hardware Stream</a>
+              <div class="util-menu-divider"></div>
+              <button type="button" class="util-menu-item util-menu-danger" id="btn-util-logout">🚪 Sign Out</button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <ul class="nav-menu" id="nav-links">
-      <!-- Populated dynamically by App.updateNavbar -->
-    </ul>
+    <!-- Tier 2: Main Navigation Bar -->
+    <div class="header-main-nav">
+      <div class="main-nav-container">
+        <!-- Brand Logo -->
+        <div class="nav-brand-wrap">
+          <button type="button" class="nav-mobile-toggle" id="btn-nav-mobile-toggle" aria-label="Toggle navigation">
+            <span>☰</span>
+          </button>
+          <a href="#/dashboard" class="nav-brand">
+            <div class="brand-logo-icon">🌱</div>
+            <span class="brand-title">SmartKisan</span>
+            <span class="brand-badge">PORTAL</span>
+          </a>
+        </div>
 
-    <div class="nav-user" id="nav-user">
-      <!-- Populated dynamically by App.updateNavbar -->
+        <!-- Primary Navigation Menu (Clean Typography, No Cluttered Emojis) -->
+        <nav class="main-menu-nav">
+          <ul class="main-nav-list" id="nav-links">
+            <!-- Populated dynamically by App.updateNavbar -->
+          </ul>
+        </nav>
+
+        <!-- Right Header Actions (HubSpot Style CTA Buttons) -->
+        <div class="header-action-buttons" id="header-action-buttons">
+          <a href="#/schedules" class="btn-nav-secondary">
+            <span>+ New Schedule</span>
+          </a>
+          <a href="#/rms-logs" class="btn-nav-primary">
+            <span class="pulse-ring"></span>
+            <span>Live Telemetry</span>
+          </a>
+        </div>
+      </div>
     </div>
   </header>
 

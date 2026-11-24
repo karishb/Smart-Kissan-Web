@@ -1,6 +1,6 @@
 /**
  * SmartKisan Web Platform - Main Application Controller
- * Modernized Navigation Architecture with Nested Settings & Dropdown Suites
+ * HubSpot-Inspired Two-Tier Header Architecture
  */
 
 // Toast notification helper
@@ -36,13 +36,11 @@ window.showToast = (message, type = 'info', duration = 3500) => {
 
 // Application Controller
 const App = (() => {
-  // Helper to close all active dropdowns
+  // Helper to close all active dropdown menus
   const closeAllDropdowns = () => {
     document.querySelectorAll('.nav-dropdown-item.open').forEach(el => el.classList.remove('open'));
-    const userPanel = document.getElementById('user-dropdown-panel');
-    if (userPanel) userPanel.classList.remove('open');
-    const userTrigger = document.getElementById('btn-user-pill-trigger');
-    if (userTrigger) userTrigger.classList.remove('open');
+    document.querySelectorAll('.utility-dropdown-menu.open').forEach(el => el.classList.remove('open'));
+    document.querySelectorAll('.utility-link.open').forEach(el => el.classList.remove('open'));
   };
 
   // Farm Settings Modal Logic
@@ -96,15 +94,23 @@ const App = (() => {
     if (alertsCheckbox) localStorage.setItem('smartkisan_audio_alerts', alertsCheckbox.checked ? 'true' : 'false');
 
     closeFarmSettings();
-    showToast('Farm configuration & measurement units saved!', 'success');
+    showToast('Farm preferences & units saved!', 'success');
   };
 
-  // Theme Management
-  const toggleTheme = () => {
-    const isDark = document.body.classList.toggle('dark-theme');
-    localStorage.setItem('smartkisan_app_theme', isDark ? 'dark' : 'light');
-    
-    // Also toggle industrial theme on RMS view if present
+  // High Contrast / Theme Management
+  const setTheme = (isDark) => {
+    if (isDark) {
+      document.body.classList.add('dark-theme');
+      localStorage.setItem('smartkisan_app_theme', 'dark');
+    } else {
+      document.body.classList.remove('dark-theme');
+      localStorage.setItem('smartkisan_app_theme', 'light');
+    }
+
+    const themeCheck = document.getElementById('check-util-theme');
+    if (themeCheck) themeCheck.checked = isDark;
+
+    // Synchronize RMS theme if present
     const rmsContainer = document.querySelector('.rms-view-container');
     if (rmsContainer) {
       if (isDark) {
@@ -115,13 +121,12 @@ const App = (() => {
         rmsContainer.classList.add('rms-theme-brand');
       }
     }
+  };
 
-    const statusText = document.getElementById('theme-toggle-status-text');
-    if (statusText) {
-      statusText.textContent = isDark ? 'Switch to Standard Light' : 'Switch to Industrial Dark';
-    }
-
-    showToast(isDark ? 'Industrial Dark Mode enabled' : 'Standard Light Mode enabled', 'info');
+  const toggleTheme = () => {
+    const isCurrentlyDark = document.body.classList.contains('dark-theme');
+    setTheme(!isCurrentlyDark);
+    showToast(!isCurrentlyDark ? 'High Contrast mode enabled' : 'Standard theme restored', 'info');
   };
 
   const updateNavbar = () => {
@@ -129,61 +134,73 @@ const App = (() => {
     const user = Auth.getUser();
 
     const navLinks = document.getElementById('nav-links');
-    const navUser = document.getElementById('nav-user');
+    const actionButtons = document.getElementById('header-action-buttons');
     const lang = I18N.getLang();
     const isDark = localStorage.getItem('smartkisan_app_theme') === 'dark';
 
-    if (isDark) {
-      document.body.classList.add('dark-theme');
-    } else {
-      document.body.classList.remove('dark-theme');
+    setTheme(isDark);
+
+    // Update Utility Bar State
+    const currentLangText = document.getElementById('util-current-lang-text');
+    if (currentLangText) {
+      currentLangText.textContent = lang === 'hi' ? 'हिन्दी' : 'English';
+    }
+
+    const userAvatar = document.getElementById('util-user-avatar');
+    const userName = document.getElementById('util-user-name');
+    const dropdownUserName = document.getElementById('util-dropdown-user-name');
+    const dropdownUserEmail = document.getElementById('util-dropdown-user-email');
+
+    if (user) {
+      const initial = (user.name || 'F')[0].toUpperCase();
+      if (userAvatar) userAvatar.textContent = initial;
+      if (userName) userName.textContent = user.name || 'Farmer';
+      if (dropdownUserName) dropdownUserName.textContent = user.name || 'Farmer';
+      if (dropdownUserEmail) dropdownUserEmail.textContent = user.email || 'farmer@smartkisan.in';
     }
 
     if (isAuthed && user) {
+      if (actionButtons) actionButtons.style.display = 'flex';
       if (navLinks) {
-        navLinks.style.display = 'flex';
         navLinks.innerHTML = `
-          <!-- 1. Primary Dashboard -->
-          <li>
-            <a href="#/dashboard" class="nav-link">
-              <span class="nav-icon">📊</span>
+          <!-- 1. Dashboard -->
+          <li class="main-nav-item">
+            <a href="#/dashboard" class="main-nav-link">
               <span>${I18N.t('dashboard')}</span>
             </a>
           </li>
 
-          <!-- 2. Farm GIS & Parcels -->
-          <li>
-            <a href="#/fields" class="nav-link">
-              <span class="nav-icon">🗺️</span>
+          <!-- 2. Farm GIS & Crops -->
+          <li class="main-nav-item">
+            <a href="#/fields" class="main-nav-link">
               <span>${I18N.t('fields')}</span>
             </a>
           </li>
 
-          <!-- 3. Nested Irrigation & Automation Suite -->
-          <li class="nav-dropdown-item" id="nav-dropdown-irrigation">
-            <button type="button" class="nav-dropdown-trigger" aria-haspopup="true">
-              <span class="nav-icon">🚰</span>
+          <!-- 3. Irrigation & IoT (HubSpot-Style Mega-Menu Dropdown) -->
+          <li class="main-nav-item nav-dropdown-item" id="nav-dropdown-irrigation">
+            <button type="button" class="main-nav-link nav-dropdown-trigger" aria-haspopup="true">
               <span>${I18N.t('irrigationSuite')}</span>
               <span class="nav-chevron">▾</span>
             </button>
             <div class="nav-dropdown-menu">
-              <div class="dropdown-header-label">WATER & AUTOMATION</div>
+              <div class="dropdown-header-label">AUTOMATION & WATER MANAGEMENT</div>
               <a href="#/pumps" class="nav-dropdown-link">
-                <span class="dropdown-link-icon">🚰</span>
+                <div class="dropdown-link-icon-box">🚰</div>
                 <div class="dropdown-link-text">
                   <span class="dropdown-link-title">${I18N.t('pumps')}</span>
                   <span class="dropdown-link-desc">${I18N.t('pumpsDesc')}</span>
                 </div>
               </a>
               <a href="#/schedules" class="nav-dropdown-link">
-                <span class="dropdown-link-icon">⏱️</span>
+                <div class="dropdown-link-icon-box">⏱️</div>
                 <div class="dropdown-link-text">
                   <span class="dropdown-link-title">${I18N.t('schedules')}</span>
                   <span class="dropdown-link-desc">${I18N.t('schedulesDesc')}</span>
                 </div>
               </a>
               <a href="#/sensors" class="nav-dropdown-link">
-                <span class="dropdown-link-icon">📡</span>
+                <div class="dropdown-link-icon-box">📡</div>
                 <div class="dropdown-link-text">
                   <span class="dropdown-link-title">${I18N.t('sensors')}</span>
                   <span class="dropdown-link-desc">${I18N.t('sensorsDesc')}</span>
@@ -192,40 +209,38 @@ const App = (() => {
             </div>
           </li>
 
-          <!-- 4. Dedicated RMS Hardware Telemetry Direct Tab (Pulsing Live Badge) -->
-          <li>
-            <a href="#/rms-logs" class="nav-link nav-link-rms">
-              <span class="nav-icon">📶</span>
+          <!-- 4. RMS Hardware Logs (Direct Prominent Link with LIVE Badge) -->
+          <li class="main-nav-item">
+            <a href="#/rms-logs" class="main-nav-link nav-link-rms">
               <span>${I18N.t('rmsLogs')}</span>
-              <span class="nav-live-indicator">LIVE</span>
+              <span class="nav-live-badge">LIVE</span>
             </a>
           </li>
 
-          <!-- 5. Nested Agronomy & Precision Advisory Suite -->
-          <li class="nav-dropdown-item" id="nav-dropdown-agronomy">
-            <button type="button" class="nav-dropdown-trigger" aria-haspopup="true">
-              <span class="nav-icon">🌱</span>
+          <!-- 5. Agronomy & Precision Advisory (Mega-Menu Dropdown) -->
+          <li class="main-nav-item nav-dropdown-item" id="nav-dropdown-agronomy">
+            <button type="button" class="main-nav-link nav-dropdown-trigger" aria-haspopup="true">
               <span>${I18N.t('agronomySuite')}</span>
               <span class="nav-chevron">▾</span>
             </button>
             <div class="nav-dropdown-menu">
-              <div class="dropdown-header-label">PRECISION AGRONOMY</div>
+              <div class="dropdown-header-label">PRECISION AGRICULTURE</div>
               <a href="#/ai-advisory" class="nav-dropdown-link">
-                <span class="dropdown-link-icon">🤖</span>
+                <div class="dropdown-link-icon-box">🤖</div>
                 <div class="dropdown-link-text">
                   <span class="dropdown-link-title">${I18N.t('aiAdvisory')}</span>
                   <span class="dropdown-link-desc">${I18N.t('advisoryDesc')}</span>
                 </div>
               </a>
               <a href="#/fertilizer" class="nav-dropdown-link">
-                <span class="dropdown-link-icon">🧪</span>
+                <div class="dropdown-link-icon-box">🧪</div>
                 <div class="dropdown-link-text">
                   <span class="dropdown-link-title">${I18N.t('fertilizer')}</span>
                   <span class="dropdown-link-desc">${I18N.t('fertilizerDesc')}</span>
                 </div>
               </a>
               <a href="#/schemes" class="nav-dropdown-link">
-                <span class="dropdown-link-icon">🏛️</span>
+                <div class="dropdown-link-icon-box">🏛️</div>
                 <div class="dropdown-link-text">
                   <span class="dropdown-link-title">${I18N.t('schemes')}</span>
                   <span class="dropdown-link-desc">${I18N.t('schemesDesc')}</span>
@@ -234,204 +249,131 @@ const App = (() => {
             </div>
           </li>
 
-          <!-- 6. Reports & DSR Records -->
-          <li>
-            <a href="#/reports" class="nav-link">
-              <span class="nav-icon">📑</span>
+          <!-- 6. DSR & Reports -->
+          <li class="main-nav-item">
+            <a href="#/reports" class="main-nav-link">
               <span>${I18N.t('reports')}</span>
             </a>
           </li>
         `;
       }
 
-      if (navUser) {
-        navUser.innerHTML = `
-          <!-- Language Selector Pill -->
-          <div class="lang-switcher">
-            <button type="button" class="btn-lang ${lang === 'en' ? 'active' : ''}" data-lang="en">EN</button>
-            <button type="button" class="btn-lang ${lang === 'hi' ? 'active' : ''}" data-lang="hi">हिन्दी</button>
-          </div>
-
-          <!-- Unified User & Nested Settings Dropdown Menu -->
-          <div class="user-menu-dropdown" id="user-menu-dropdown-wrap">
-            <button type="button" class="btn-user-pill" id="btn-user-pill-trigger">
-              <div class="user-avatar">${(user.name || 'F')[0].toUpperCase()}</div>
-              <div class="user-pill-info">
-                <span class="user-pill-name">${user.name || 'Farmer'}</span>
-                <span class="user-role-badge">${user.role || 'Farmer'}</span>
-              </div>
-              <span class="nav-chevron">▾</span>
-            </button>
-
-            <div class="user-dropdown-panel" id="user-dropdown-panel">
-              <div class="user-panel-header">
-                <div class="user-avatar-lg">${(user.name || 'F')[0].toUpperCase()}</div>
-                <div class="user-panel-meta">
-                  <div class="user-panel-name">${user.name || 'Farmer Ramesh'}</div>
-                  <div class="user-panel-email">${user.email || 'farmer.ramesh@smartkisan.in'}</div>
-                  <div class="user-panel-status">
-                    <span class="status-pulse-dot"></span>
-                    <span>SmartKisan Verified Hub</span>
-                  </div>
-                </div>
-              </div>
-
-              <div class="user-panel-divider"></div>
-
-              <div class="user-panel-section">
-                <div class="panel-section-title">FARM & SYSTEM PREFERENCES</div>
-                
-                <button type="button" class="user-panel-action" id="btn-open-farm-settings">
-                  <div class="action-icon-wrap" style="background: #E8F5E9; color: #2E7D32;">⚙️</div>
-                  <div class="action-meta">
-                    <span class="action-title">${I18N.t('settingsTitle')}</span>
-                    <span class="action-desc">${I18N.t('farmSettingsDesc')}</span>
-                  </div>
-                </button>
-
-                <button type="button" class="user-panel-action" id="btn-toggle-app-theme">
-                  <div class="action-icon-wrap" style="background: #F1F5F9; color: #334155;">🌓</div>
-                  <div class="action-meta">
-                    <span class="action-title">${I18N.t('themeMode')}</span>
-                    <span class="action-desc" id="theme-toggle-status-text">${isDark ? 'Switch to Standard Light' : 'Switch to Industrial Dark'}</span>
-                  </div>
-                </button>
-
-                <a href="#/rms-logs" class="user-panel-action" id="link-user-rms-stream">
-                  <div class="action-icon-wrap" style="background: #E0F2FE; color: #0284C7;">📶</div>
-                  <div class="action-meta">
-                    <span class="action-title">${I18N.t('liveStream')}</span>
-                    <span class="action-desc">4.5s stream • 27 active pumps</span>
-                  </div>
-                </a>
-              </div>
-
-              <div class="user-panel-divider"></div>
-
-              <div class="user-panel-footer">
-                <button type="button" class="btn-panel-logout" id="btn-navbar-logout">
-                  <span>🚪</span>
-                  <span>${I18N.t('logout')}</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        `;
-
-        // Bind Language Selector
-        navUser.querySelectorAll('.btn-lang').forEach(btn => {
-          btn.addEventListener('click', () => {
-            const selectedLang = btn.getAttribute('data-lang');
-            I18N.setLang(selectedLang);
-          });
-        });
-
-        // Bind User Menu Trigger
-        const userTrigger = document.getElementById('btn-user-pill-trigger');
-        const userPanel = document.getElementById('user-dropdown-panel');
-        if (userTrigger && userPanel) {
-          userTrigger.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const isOpen = userPanel.classList.toggle('open');
-            userTrigger.classList.toggle('open', isOpen);
-            // Close other nav dropdowns
-            document.querySelectorAll('.nav-dropdown-item.open').forEach(el => el.classList.remove('open'));
-          });
-        }
-
-        // Bind Farm Settings Opener
-        const openSettingsBtn = document.getElementById('btn-open-farm-settings');
-        if (openSettingsBtn) {
-          openSettingsBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            openFarmSettings();
-          });
-        }
-
-        // Bind Theme Toggle
-        const themeBtn = document.getElementById('btn-toggle-app-theme');
-        if (themeBtn) {
-          themeBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            toggleTheme();
-          });
-        }
-
-        // Bind Logout
-        const logoutBtn = document.getElementById('btn-navbar-logout');
-        if (logoutBtn) {
-          logoutBtn.addEventListener('click', () => {
-            Auth.logout();
-          });
-        }
-
-        const rmsLink = document.getElementById('link-user-rms-stream');
-        if (rmsLink) {
-          rmsLink.addEventListener('click', () => {
-            closeAllDropdowns();
-          });
-        }
-      }
-
-      // Bind Nav Dropdown Triggers (Irrigation & Agronomy)
+      // Bind Main Nav Dropdown Triggers
       if (navLinks) {
         navLinks.querySelectorAll('.nav-dropdown-trigger').forEach(trigger => {
           trigger.addEventListener('click', (e) => {
             e.stopPropagation();
-            const parentItem = trigger.closest('.nav-dropdown-item');
-            if (!parentItem) return;
+            const parent = trigger.closest('.nav-dropdown-item');
+            if (!parent) return;
 
-            const wasOpen = parentItem.classList.contains('open');
+            const wasOpen = parent.classList.contains('open');
             closeAllDropdowns();
             if (!wasOpen) {
-              parentItem.classList.add('open');
+              parent.classList.add('open');
             }
           });
         });
 
-        // Close dropdown when clicking a child link
-        navLinks.querySelectorAll('.nav-dropdown-link, .nav-link').forEach(link => {
+        // Close on link click
+        navLinks.querySelectorAll('.nav-dropdown-link, .main-nav-link').forEach(link => {
           link.addEventListener('click', () => {
             closeAllDropdowns();
-            // Also close mobile menu if open
-            if (navLinks) navLinks.classList.remove('mobile-open');
+            const mobileNav = document.querySelector('.main-menu-nav');
+            if (mobileNav) mobileNav.classList.remove('mobile-open');
           });
         });
       }
     } else {
+      if (actionButtons) actionButtons.style.display = 'none';
       if (navLinks) {
-        navLinks.style.display = 'none';
-      }
-      if (navUser) {
-        navUser.innerHTML = `
-          <!-- Language Selector Pill -->
-          <div class="lang-switcher" style="margin-right: 10px;">
-            <button type="button" class="btn-lang ${lang === 'en' ? 'active' : ''}" data-lang="en">EN</button>
-            <button type="button" class="btn-lang ${lang === 'hi' ? 'active' : ''}" data-lang="hi">हिन्दी</button>
-          </div>
-          <a href="#/login" class="nav-link">${I18N.t('login')}</a>
-          <a href="#/register" class="btn-primary" style="padding: 6px 14px; font-size: 13px; width: auto;">${I18N.t('register')}</a>
+        navLinks.innerHTML = `
+          <li class="main-nav-item">
+            <a href="#/login" class="main-nav-link">${I18N.t('login')}</a>
+          </li>
+          <li class="main-nav-item">
+            <a href="#/register" class="main-nav-link">${I18N.t('register')}</a>
+          </li>
         `;
-
-        navUser.querySelectorAll('.btn-lang').forEach(btn => {
-          btn.addEventListener('click', () => {
-            const selectedLang = btn.getAttribute('data-lang');
-            I18N.setLang(selectedLang);
-          });
-        });
       }
     }
   };
 
   const bindGlobalEvents = () => {
-    // Close dropdowns on click outside
+    // Utility Language Dropdown Toggle
+    const langBtn = document.getElementById('btn-util-lang-trigger');
+    const langMenu = document.getElementById('util-lang-menu');
+    if (langBtn && langMenu) {
+      langBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isOpen = langMenu.classList.toggle('open');
+        langBtn.classList.toggle('open', isOpen);
+      });
+    }
+
+    // Language Selection Items
+    document.querySelectorAll('#util-lang-menu .util-menu-item').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const selectedLang = btn.getAttribute('data-lang');
+        I18N.setLang(selectedLang);
+        closeAllDropdowns();
+      });
+    });
+
+    // High Contrast / Theme Toggle Switch
+    const themeCheckbox = document.getElementById('check-util-theme');
+    if (themeCheckbox) {
+      themeCheckbox.addEventListener('change', () => {
+        toggleTheme();
+      });
+    }
+
+    // Live Telemetry Sync Action
+    const syncBtn = document.getElementById('btn-util-sync-telemetry');
+    if (syncBtn) {
+      syncBtn.addEventListener('click', () => {
+        syncBtn.style.transform = 'rotate(180deg)';
+        syncBtn.style.transition = 'transform 0.5s ease';
+        setTimeout(() => {
+          syncBtn.style.transform = 'none';
+        }, 500);
+        showToast('Telemetry synced: 45 daily heartbeats & 27 active pumps online', 'success');
+      });
+    }
+
+    // Utility User Account Dropdown Toggle
+    const userBtn = document.getElementById('btn-util-user-trigger');
+    const userMenu = document.getElementById('util-user-menu');
+    if (userBtn && userMenu) {
+      userBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isOpen = userMenu.classList.toggle('open');
+        userBtn.classList.toggle('open', isOpen);
+      });
+    }
+
+    // Preferences Modal Buttons
+    const utilPrefBtn = document.getElementById('btn-util-farm-settings');
+    const menuPrefBtn = document.getElementById('btn-menu-farm-settings');
+    if (utilPrefBtn) utilPrefBtn.addEventListener('click', openFarmSettings);
+    if (menuPrefBtn) menuPrefBtn.addEventListener('click', openFarmSettings);
+
+    // Logout Button
+    const logoutBtn = document.getElementById('btn-util-logout');
+    if (logoutBtn) {
+      logoutBtn.addEventListener('click', () => {
+        Auth.logout();
+      });
+    }
+
+    // Close Dropdowns on Click Outside
     document.addEventListener('click', (e) => {
-      if (!e.target.closest('.nav-dropdown-item') && !e.target.closest('#user-menu-dropdown-wrap')) {
+      if (!e.target.closest('.utility-dropdown') && !e.target.closest('.nav-dropdown-item')) {
         closeAllDropdowns();
       }
     });
 
-    // Close on Escape key
+    // Escape Key Listener
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
         closeAllDropdowns();
@@ -439,13 +381,13 @@ const App = (() => {
       }
     });
 
-    // Mobile Hamburger Toggle
+    // Mobile Hamburger Navigation Toggle
     const mobileToggle = document.getElementById('btn-nav-mobile-toggle');
-    const navLinks = document.getElementById('nav-links');
-    if (mobileToggle && navLinks) {
+    const mobileNav = document.querySelector('.main-menu-nav');
+    if (mobileToggle && mobileNav) {
       mobileToggle.addEventListener('click', (e) => {
         e.stopPropagation();
-        navLinks.classList.toggle('mobile-open');
+        mobileNav.classList.toggle('mobile-open');
       });
     }
 

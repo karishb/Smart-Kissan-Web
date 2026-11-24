@@ -80,7 +80,7 @@ const Router = (() => {
     }
 
     // Update active nav links and parent dropdown triggers
-    document.querySelectorAll('.nav-link, .nav-dropdown-link').forEach(link => {
+    document.querySelectorAll('.main-nav-link, .nav-link, .nav-dropdown-link').forEach(link => {
       const href = link.getAttribute('href');
       if (href === path) {
         link.classList.add('active');
