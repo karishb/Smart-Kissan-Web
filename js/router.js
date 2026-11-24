@@ -79,13 +79,27 @@ const Router = (() => {
       }
     }
 
-    // Update active nav links
-    document.querySelectorAll('.nav-link').forEach(link => {
+    // Update active nav links and parent dropdown triggers
+    document.querySelectorAll('.nav-link, .nav-dropdown-link').forEach(link => {
       const href = link.getAttribute('href');
       if (href === path) {
         link.classList.add('active');
+        const parentDropdown = link.closest('.nav-dropdown-item');
+        if (parentDropdown) {
+          const trigger = parentDropdown.querySelector('.nav-dropdown-trigger');
+          if (trigger) trigger.classList.add('active');
+        }
       } else {
         link.classList.remove('active');
+      }
+    });
+
+    // Remove active from any dropdown trigger whose children are not active
+    document.querySelectorAll('.nav-dropdown-item').forEach(item => {
+      const activeChild = item.querySelector('.nav-dropdown-link.active');
+      const trigger = item.querySelector('.nav-dropdown-trigger');
+      if (trigger && !activeChild) {
+        trigger.classList.remove('active');
       }
     });
 

@@ -29,13 +29,18 @@
 
   <!-- Top Navigation Bar -->
   <header class="navbar">
-    <a href="#/dashboard" class="nav-brand">
-      <div class="brand-icon">🌱</div>
-      <div style="display: flex; align-items: center;">
-        <span class="brand-name">SmartKisan</span>
-        <span class="brand-tag">WEB PORTAL</span>
-      </div>
-    </a>
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <button type="button" class="nav-mobile-toggle" id="btn-nav-mobile-toggle" aria-label="Toggle navigation menu">
+        <span>☰</span>
+      </button>
+      <a href="#/dashboard" class="nav-brand">
+        <div class="brand-icon">🌱</div>
+        <div style="display: flex; align-items: center;">
+          <span class="brand-name">SmartKisan</span>
+          <span class="brand-tag">WEB PORTAL</span>
+        </div>
+      </a>
+    </div>
 
     <ul class="nav-menu" id="nav-links">
       <!-- Populated dynamically by App.updateNavbar -->
@@ -50,6 +55,87 @@
   <main id="app">
     <!-- Rendered by Router -->
   </main>
+
+  <!-- Farm Configuration & Settings Modal -->
+  <div class="modal-overlay" id="modal-farm-settings" style="display: none;">
+    <div class="modal-dialog" style="max-width: 520px;">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span style="font-size: 22px;">⚙️</span>
+          <div>
+            <h3 class="modal-title" style="margin: 0; font-size: 17px; font-weight: 700; color: #1E293B;">Farm Preferences & Configuration</h3>
+            <p style="margin: 2px 0 0; font-size: 12px; color: #64748B;">Configure land measurements, telemetry frequency & pump safety cutoffs</p>
+          </div>
+        </div>
+        <button type="button" class="btn-close-modal" id="btn-close-farm-settings" style="background: none; border: none; font-size: 20px; cursor: pointer; color: #94A3B8;">✕</button>
+      </div>
+
+      <div class="modal-body" style="padding: 20px;">
+        <form id="farm-settings-form">
+          <div style="margin-bottom: 16px;">
+            <label style="display: block; font-size: 13px; font-weight: 600; color: #334155; margin-bottom: 6px;">Farm Display Name</label>
+            <input type="text" id="setting-farm-name" class="input-field" value="SmartKisan Agricultural Hub - Zone 1" style="width: 100%;" />
+          </div>
+
+          <div style="margin-bottom: 16px;">
+            <label style="display: block; font-size: 13px; font-weight: 600; color: #334155; margin-bottom: 6px;">Default Land Measurement Unit</label>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+              <label class="setting-unit-card">
+                <input type="radio" name="farm-unit" value="acres" checked />
+                <span class="unit-card-title">Acres</span>
+                <span class="unit-card-sub">Standard</span>
+              </label>
+              <label class="setting-unit-card">
+                <input type="radio" name="farm-unit" value="bigha" />
+                <span class="unit-card-title">Bigha</span>
+                <span class="unit-card-sub">0.2529 ha</span>
+              </label>
+              <label class="setting-unit-card">
+                <input type="radio" name="farm-unit" value="hectares" />
+                <span class="unit-card-title">Hectares</span>
+                <span class="unit-card-sub">Metric</span>
+              </label>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px;">
+            <div>
+              <label style="display: block; font-size: 13px; font-weight: 600; color: #334155; margin-bottom: 6px;">Pump Max Duration</label>
+              <select id="setting-pump-cutoff" class="input-field" style="width: 100%;">
+                <option value="30">30 Minutes</option>
+                <option value="45" selected>45 Minutes</option>
+                <option value="60">60 Minutes</option>
+                <option value="90">90 Minutes</option>
+              </select>
+            </div>
+            <div>
+              <label style="display: block; font-size: 13px; font-weight: 600; color: #334155; margin-bottom: 6px;">RMS Polling Stream</label>
+              <select id="setting-rms-rate" class="input-field" style="width: 100%;">
+                <option value="4.5" selected>4.5s (Live High Rate)</option>
+                <option value="10">10s (Standard)</option>
+                <option value="30">30s (Eco Mode)</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px; padding: 12px; margin-bottom: 20px;">
+            <label style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer;">
+              <input type="checkbox" id="setting-audio-alerts" checked style="width: 18px; height: 18px; accent-color: #10B981; margin-top: 2px;" />
+              <div>
+                <span style="font-size: 13px; font-weight: 600; color: #1E293B; display: block;">Audible Hardware Trip Alarms</span>
+                <span style="font-size: 11px; color: #64748B;">Sound buzzer warning when RMS telemetry registers Dry Run (08) or Phase Loss (10)</span>
+              </div>
+            </label>
+          </div>
+
+          <div style="display: flex; justify-content: flex-end; gap: 10px;">
+            <button type="button" class="btn-secondary" id="btn-cancel-farm-settings" style="padding: 8px 16px;">Cancel</button>
+            <button type="submit" class="btn-primary" style="padding: 8px 22px; width: auto;">Save Preferences</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
 
   <!-- Global Toast Notifications Container -->
   <div id="toast-container" aria-live="polite"></div>

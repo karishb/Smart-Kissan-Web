@@ -52,7 +52,24 @@ const I18N = (() => {
       marginal: 'Marginal',
       unsafe: 'Unsafe',
       fertilizer: 'Fertilizer Calculator',
-      schemes: 'Govt Schemes'
+      schemes: 'Govt Schemes',
+      irrigationSuite: 'Irrigation & IoT',
+      agronomySuite: 'Agronomy & Tools',
+      farmSettings: 'Farm Preferences',
+      themeMode: 'Appearance & Theme',
+      themeLight: 'Standard Light',
+      themeDark: 'Industrial Dark',
+      settingsTitle: 'Farm Configuration & Units',
+      saveSettings: 'Save Preferences',
+      liveStream: 'Live Hardware Stream',
+      hardwareLogs: 'RMS Live Telemetry',
+      pumpsDesc: 'Live pump control & motor status',
+      schedulesDesc: 'Automated irrigation timers',
+      sensorsDesc: 'Soil moisture & probe telemetry',
+      advisoryDesc: 'Disease alerts & 7-day spray plan',
+      fertilizerDesc: 'NPK bag dosages & soil calibration',
+      schemesDesc: 'PM-KUSUM & subsidies guide',
+      farmSettingsDesc: 'Acres/Bigha, pump limits & alerts'
     },
     hi: {
       appName: 'स्मार्ट किसान',
@@ -100,7 +117,24 @@ const I18N = (() => {
       marginal: 'सावधानीपूर्वक',
       unsafe: 'असुरक्षित',
       fertilizer: 'उर्वरक कैलकुलेटर',
-      schemes: 'सरकारी योजनाएं'
+      schemes: 'सरकारी योजनाएं',
+      irrigationSuite: 'सिंचाई एवं IoT',
+      agronomySuite: 'कृषि एवं सलाह',
+      farmSettings: 'फार्म सेटिंग्स',
+      themeMode: 'थीम एवं स्वरूप',
+      themeLight: 'लाइट थीम',
+      themeDark: 'डार्क थीम',
+      settingsTitle: 'फार्म कॉन्फ़िगरेशन व इकाइयाँ',
+      saveSettings: 'सेटिंग्स सहेजें',
+      liveStream: 'लाइव हार्डवेयर स्ट्रीम',
+      hardwareLogs: 'RMS लाइव टेलीमेट्री',
+      pumpsDesc: 'पंप नियंत्रण एवं मोटर स्थिति',
+      schedulesDesc: 'स्वचालित सिंचाई टाइमर',
+      sensorsDesc: 'मिट्टी की नमी और सेंसर जांच',
+      advisoryDesc: 'फसल रोग व 7-दिवसीय स्प्रे योजना',
+      fertilizerDesc: 'उर्वरक बैग गणना व खुराक',
+      schemesDesc: 'PM-KUSUM व सब्सिडी योजनाएं',
+      farmSettingsDesc: 'एकड़/बीघा, पंप सीमाएं व अलार्म'
     }
   };
 
