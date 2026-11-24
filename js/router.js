@@ -16,14 +16,15 @@ const Router = (() => {
     '#/sensors': { view: SensorsView, isProtected: true },
     '#/ai-advisory': { view: AiAdvisoryView, isProtected: true },
     '#/reports': { view: ReportsView, isProtected: true },
-    '#/rms-logs': { view: RmsLogsView, isProtected: true },
-    '#/logs': { view: RmsLogsView, isProtected: true },
-    '#/fertilizer': { view: FertilizerView, isProtected: true },
-    '#/schemes': { view: SchemesView, isProtected: true }
+    '#/rms-logs': { view: RmsLogsView, isProtected: false },
+    '#/logs': { view: RmsLogsView, isProtected: false },
+    '#/fertilizer': { view: FertilizerView, isProtected: false },
+    '#/schemes': { view: SchemesView, isProtected: false }
   };
 
   const getRoute = () => {
-    const hash = window.location.hash || '#/dashboard';
+    const isAuthed = Auth.isAuthenticated();
+    const hash = window.location.hash || (isAuthed ? '#/dashboard' : '#/login');
     return hash.split('?')[0];
   };
 
@@ -35,17 +36,11 @@ const Router = (() => {
     let isAuthed = Auth.isAuthenticated();
 
     if (routeConfig && routeConfig.isProtected && !isAuthed) {
-      // Auto-provision demo session so team members visiting direct URLs access the platform seamlessly
-      Auth.setSession('demo-jwt-token-smartkisan-2026', {
-        id: 'user-demo-1',
-        name: 'Farmer Ramesh',
-        email: 'farmer.ramesh@smartkisan.in',
-        role: 'user'
-      });
-      isAuthed = true;
+      window.location.hash = '#/login';
+      return;
     }
 
-    if (routeConfig && !routeConfig.isProtected && isAuthed) {
+    if (routeConfig && !routeConfig.isProtected && isAuthed && (path === '#/login' || path === '#/register')) {
       window.location.hash = '#/dashboard';
       return;
     }

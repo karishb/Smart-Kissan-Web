@@ -171,7 +171,18 @@ const App = (() => {
     }
 
     if (isAuthed && user) {
-      if (actionButtons) actionButtons.style.display = 'flex';
+      if (actionButtons) {
+        actionButtons.style.display = 'flex';
+        actionButtons.innerHTML = `
+          <a href="#/schedules" class="btn-nav-secondary">
+            <span>+ New Schedule</span>
+          </a>
+          <a href="#/rms-logs" class="btn-nav-primary">
+            <span class="pulse-ring"></span>
+            <span>Live Telemetry</span>
+          </a>
+        `;
+      }
       if (navLinks) {
         navLinks.innerHTML = `
           <!-- 1. Dashboard -->
@@ -295,14 +306,35 @@ const App = (() => {
         });
       }
     } else {
-      if (actionButtons) actionButtons.style.display = 'none';
+      // Logged out / Public state: replace mini toggle with prominent CTA button + clean public links
+      if (actionButtons) {
+        actionButtons.style.display = 'flex';
+        actionButtons.innerHTML = `
+          <a href="#/login" class="btn-nav-secondary" id="btn-header-login">
+            <span>Sign In</span>
+          </a>
+          <a href="#/register" class="btn-register-prominent" id="btn-header-register">
+            <span>Register Farm</span>
+            <span class="btn-arrow">→</span>
+          </a>
+        `;
+      }
       if (navLinks) {
         navLinks.innerHTML = `
           <li class="main-nav-item">
-            <a href="#/login" class="main-nav-link">${I18N.t('login')}</a>
+            <a href="#/schemes" class="main-nav-link">
+              <span>🏛️ ${I18N.t('schemes') || 'Govt Schemes'}</span>
+            </a>
           </li>
           <li class="main-nav-item">
-            <a href="#/register" class="main-nav-link">${I18N.t('register')}</a>
+            <a href="#/fertilizer" class="main-nav-link">
+              <span>🧪 ${I18N.t('fertilizer') || 'Fertilizer Calculator'}</span>
+            </a>
+          </li>
+          <li class="main-nav-item">
+            <a href="#/rms-logs" class="main-nav-link">
+              <span>📶 RMS Telemetry Logs</span>
+            </a>
           </li>
         `;
       }
