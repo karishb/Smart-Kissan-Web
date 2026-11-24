@@ -123,9 +123,9 @@ body.dark-theme .header-utility-bar {
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  max-width: 1440px;
-  margin: 0 auto;
-  padding: 0 24px;
+  max-width: 100%;
+  margin: 0;
+  padding: 0 16px;
 }
 
 .utility-left,
@@ -391,9 +391,9 @@ body.dark-theme .header-main-nav {
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  max-width: 1440px;
-  margin: 0 auto;
-  padding: 0 24px;
+  max-width: 100%;
+  margin: 0;
+  padding: 0 16px;
 }
 
 .nav-brand-wrap {
@@ -778,9 +778,9 @@ body.dark-theme .unit-card-title {
 #app {
   flex: 1;
   width: 100%;
-  max-width: 1360px;
-  margin: 0 auto;
-  padding: 24px 20px 48px;
+  max-width: 100%;
+  margin: 0;
+  padding: 16px 16px 40px;
 }
 
 #app.app-full-width,
