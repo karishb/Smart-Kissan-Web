@@ -62,21 +62,6 @@ const LoginView = {
               <span id="login-error-message">Invalid credentials</span>
             </div>
 
-            <!-- Quick Demo Fill Helpers -->
-            <div class="demo-account-box">
-              <div class="demo-box-header">
-                <span>⚡ Quick Demo Credentials</span>
-              </div>
-              <div class="demo-buttons-row">
-                <button type="button" class="btn-demo-fill" id="btn-demo-farmer">
-                  🌾 Farmer Demo
-                </button>
-                <button type="button" class="btn-demo-fill" id="btn-demo-agronomist">
-                  🔬 Agronomist Demo
-                </button>
-              </div>
-            </div>
-
             <form id="login-form">
               <div class="form-group">
                 <label class="form-label" for="login-identifier">Email, Username, or Phone</label>
@@ -86,7 +71,7 @@ const LoginView = {
                     type="text" 
                     id="login-identifier" 
                     class="form-input" 
-                    placeholder="e.g. ramesh@smartkisan.in or 9876543210" 
+                    placeholder="e.g. ramesh@smartkisan.in or ramesh_punjab" 
                     required 
                     autocomplete="username"
                   />
@@ -142,8 +127,6 @@ const LoginView = {
     const passwordInput = document.getElementById('login-password');
     const rememberCheckbox = document.getElementById('login-remember');
     const togglePwdBtn = document.getElementById('btn-toggle-pwd');
-    const demoFarmerBtn = document.getElementById('btn-demo-farmer');
-    const demoAgronomistBtn = document.getElementById('btn-demo-agronomist');
     const forgotPwdLink = document.getElementById('link-forgot-pwd');
     const submitBtn = document.getElementById('btn-login-submit');
     const errorAlert = document.getElementById('login-error-alert');
@@ -180,67 +163,10 @@ const LoginView = {
       });
     }
 
-    // Demo Fill: Farmer
-    if (demoFarmerBtn) {
-      demoFarmerBtn.addEventListener('click', async () => {
-        hideError();
-        identifierInput.value = 'farmer.ramesh@smartkisan.in';
-        passwordInput.value = 'kisan123';
-        try {
-          submitBtn.disabled = true;
-          submitBtn.innerHTML = '<span class="auth-spinner"></span> <span>Logging in...</span>';
-          const res = await Auth.login('farmer.ramesh@smartkisan.in', 'kisan123');
-          window.showToast(`Welcome back, ${res.user.name || 'Farmer Ramesh'}!`, 'success');
-          window.location.hash = '#/dashboard';
-        } catch (err) {
-          // Fallback demo session if remote backend is cold/offline
-          Auth.setSession('demo-jwt-token-smartkisan-2026', {
-            id: 'user-demo-1',
-            name: 'Farmer Ramesh',
-            email: 'farmer.ramesh@smartkisan.in',
-            role: 'user'
-          });
-          window.showToast('Demo session activated! Welcome, Farmer Ramesh.', 'success');
-          window.location.hash = '#/dashboard';
-        } finally {
-          submitBtn.disabled = false;
-          submitBtn.innerHTML = '<span>Sign In to Dashboard</span> <span>→</span>';
-        }
-      });
-    }
-
-    // Demo Fill: Agronomist
-    if (demoAgronomistBtn) {
-      demoAgronomistBtn.addEventListener('click', async () => {
-        hideError();
-        identifierInput.value = 'agronomist.verma@smartkisan.in';
-        passwordInput.value = 'agriAdmin123';
-        try {
-          submitBtn.disabled = true;
-          submitBtn.innerHTML = '<span class="auth-spinner"></span> <span>Logging in...</span>';
-          const res = await Auth.login('agronomist.verma@smartkisan.in', 'agriAdmin123');
-          window.showToast(`Welcome, ${res.user.name || 'Dr. Verma'}!`, 'success');
-          window.location.hash = '#/dashboard';
-        } catch (err) {
-          Auth.setSession('demo-jwt-token-agronomist-2026', {
-            id: 'user-demo-2',
-            name: 'Dr. Verma (Agronomist)',
-            email: 'agronomist.verma@smartkisan.in',
-            role: 'admin'
-          });
-          window.showToast('Agronomist demo session activated!', 'success');
-          window.location.hash = '#/dashboard';
-        } finally {
-          submitBtn.disabled = false;
-          submitBtn.innerHTML = '<span>Sign In to Dashboard</span> <span>→</span>';
-        }
-      });
-    }
-
     // Forgot Password Hint
     if (forgotPwdLink) {
       forgotPwdLink.addEventListener('click', () => {
-        window.showToast('To reset password, enter your registered email on the mobile app or call SmartKisan Support: 1800-SMART-KISAN', 'info');
+        window.showToast('To reset password, use OTP on your registered phone/email or contact SmartKisan Support: 1800-SMART-KISAN', 'info');
       });
     }
 

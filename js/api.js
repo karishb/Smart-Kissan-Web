@@ -293,17 +293,10 @@ const API = (() => {
         throw err;
       }
 
-      // If auth route and genuine network disconnection occurred:
+      // If auth route failed:
       if (endpoint.startsWith('/auth/')) {
-        const body = JSON.parse(options.body || '{}');
-        const idStr = String(body.identifier || body.email || '').toLowerCase();
-        // Allow offline demo accounts to log in seamlessly even if server is completely offline
-        if (idStr.includes('farmer.ramesh') || idStr.includes('agronomist.verma') || idStr.includes('demo')) {
-          console.warn(`[API] Server offline. Activating local demo session for ${idStr}`);
-          return handleFallback(endpoint, options, err);
-        }
         console.warn(`[API] Auth call to ${endpoint} failed:`, err.message);
-        throw new Error('Unable to connect to SmartKisan server. Please check your network connection.');
+        throw new Error(err.message || 'Unable to connect to SmartKisan server. Please check your network connection.');
       }
 
       console.warn(`[API] Remote call to ${endpoint} failed or offline. Using demo fallback:`, err.message);
@@ -313,36 +306,6 @@ const API = (() => {
 
   const handleFallback = (endpoint, options = {}, error) => {
     const method = (options.method || 'GET').toUpperCase();
-
-    // Auth Login
-    if (endpoint === '/auth/login' && method === 'POST') {
-      const body = JSON.parse(options.body || '{}');
-      const name = body.identifier ? body.identifier.split('@')[0] : 'Farmer Ramesh';
-      const cleanName = name.charAt(0).toUpperCase() + name.slice(1);
-      return {
-        token: 'demo-jwt-token-smartkisan-2026',
-        user: {
-          id: 'user-demo-1',
-          name: cleanName.includes('Admin') ? 'Admin Officer' : (cleanName || 'Farmer Ramesh'),
-          email: body.identifier || 'farmer@smartkisan.in',
-          role: cleanName.toLowerCase().includes('admin') ? 'admin' : 'user'
-        }
-      };
-    }
-
-    // Auth Register
-    if (endpoint === '/auth/register' && method === 'POST') {
-      const body = JSON.parse(options.body || '{}');
-      return {
-        token: 'demo-jwt-token-smartkisan-2026',
-        user: {
-          id: 'user-demo-reg-' + Date.now(),
-          name: body.name || 'New Farmer',
-          email: body.email || 'farmer@smartkisan.in',
-          role: 'user'
-        }
-      };
-    }
 
     // Pumps List
     if (endpoint === '/pumps' && method === 'GET') {

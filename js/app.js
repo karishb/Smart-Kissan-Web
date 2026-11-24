@@ -146,17 +146,28 @@ const App = (() => {
       currentLangText.textContent = lang === 'hi' ? 'हिन्दी' : 'English';
     }
 
+    const userDropdown = document.getElementById('util-user-dropdown');
+    const syncBtn = document.getElementById('btn-util-sync-telemetry');
+    const farmSettingsBtn = document.getElementById('btn-util-farm-settings');
     const userAvatar = document.getElementById('util-user-avatar');
     const userName = document.getElementById('util-user-name');
     const dropdownUserName = document.getElementById('util-dropdown-user-name');
     const dropdownUserEmail = document.getElementById('util-dropdown-user-email');
 
-    if (user) {
+    if (isAuthed && user) {
+      if (userDropdown) userDropdown.style.display = 'block';
+      if (syncBtn) syncBtn.style.display = 'inline-flex';
+      if (farmSettingsBtn) farmSettingsBtn.style.display = 'inline-flex';
+
       const initial = (user.name || 'F')[0].toUpperCase();
       if (userAvatar) userAvatar.textContent = initial;
       if (userName) userName.textContent = user.name || 'Farmer';
       if (dropdownUserName) dropdownUserName.textContent = user.name || 'Farmer';
-      if (dropdownUserEmail) dropdownUserEmail.textContent = user.email || 'farmer@smartkisan.in';
+      if (dropdownUserEmail) dropdownUserEmail.textContent = user.email || '';
+    } else {
+      if (userDropdown) userDropdown.style.display = 'none';
+      if (syncBtn) syncBtn.style.display = 'none';
+      if (farmSettingsBtn) farmSettingsBtn.style.display = 'none';
     }
 
     if (isAuthed && user) {

@@ -1047,47 +1047,7 @@ body.dark-theme .unit-card-title {
   padding: 0 12px;
 }
 
-.demo-account-box {
-  background: var(--bg-card-subtle);
-  border: 1px dashed var(--primary-light);
-  border-radius: var(--radius-md);
-  padding: 12px 14px;
-  margin-bottom: 20px;
-}
 
-.demo-box-header {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--primary);
-  margin-bottom: 8px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.demo-buttons-row {
-  display: flex;
-  gap: 10px;
-}
-
-.btn-demo-fill {
-  flex: 1;
-  background: #FFFFFF;
-  border: 1px solid var(--border);
-  color: var(--text-main);
-  padding: 6px 10px;
-  border-radius: var(--radius-sm);
-  font-size: 12px;
-  font-weight: 500;
-  text-align: center;
-  box-shadow: var(--shadow-sm);
-}
-
-.btn-demo-fill:hover {
-  border-color: var(--primary);
-  color: var(--primary);
-  background: var(--primary-50);
-}
 
 .auth-switch {
   text-align: center;
