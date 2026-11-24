@@ -249,9 +249,9 @@ const API = (() => {
   const request = async (endpoint, options = {}) => {
     const url = `${CONFIG.API_BASE_URL}${endpoint}`;
     
-    // Fast 1.5s timeout so browsers never hang on unreachable or mixed-content endpoints
+    // 8-second timeout to accommodate cloud backend cold starts and network latency
     const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
-    const timeoutId = controller ? setTimeout(() => controller.abort(), 1500) : null;
+    const timeoutId = controller ? setTimeout(() => controller.abort(), 8000) : null;
 
     const opts = {
       ...options,
@@ -265,14 +265,47 @@ const API = (() => {
     try {
       const response = await fetch(url, opts);
       if (timeoutId) clearTimeout(timeoutId);
-      const data = await response.json();
+      
+      let data = {};
+      try {
+        data = await response.json();
+      } catch (e) {
+        data = { message: response.statusText };
+      }
       
       if (!response.ok) {
-        throw new Error(data.error || `Request failed with status ${response.status}`);
+        const errorMsg = data.error || data.message || `Request failed with status ${response.status}`;
+        const err = new Error(errorMsg);
+        err.status = response.status;
+        err.data = data;
+        // Never swallow 4xx/5xx backend validation errors on auth routes into fake sessions
+        if (endpoint.startsWith('/auth/')) {
+          throw err;
+        }
+        throw err;
       }
       return data;
     } catch (err) {
       if (timeoutId) clearTimeout(timeoutId);
+      
+      // If server responded with an HTTP error (e.g. 400 Invalid credentials, 400 Email already exists), throw it directly
+      if (err.status) {
+        throw err;
+      }
+
+      // If auth route and genuine network disconnection occurred:
+      if (endpoint.startsWith('/auth/')) {
+        const body = JSON.parse(options.body || '{}');
+        const idStr = String(body.identifier || body.email || '').toLowerCase();
+        // Allow offline demo accounts to log in seamlessly even if server is completely offline
+        if (idStr.includes('farmer.ramesh') || idStr.includes('agronomist.verma') || idStr.includes('demo')) {
+          console.warn(`[API] Server offline. Activating local demo session for ${idStr}`);
+          return handleFallback(endpoint, options, err);
+        }
+        console.warn(`[API] Auth call to ${endpoint} failed:`, err.message);
+        throw new Error('Unable to connect to SmartKisan server. Please check your network connection.');
+      }
+
       console.warn(`[API] Remote call to ${endpoint} failed or offline. Using demo fallback:`, err.message);
       return handleFallback(endpoint, options, err);
     }
@@ -475,12 +508,35 @@ const API = (() => {
       login: (identifier, password) =>
         request('/auth/login', {
           method: 'POST',
-          body: JSON.stringify({ identifier, password })
+          body: JSON.stringify({ identifier, email: identifier, password })
         }),
       register: (userData) =>
         request('/auth/register', {
           method: 'POST',
           body: JSON.stringify(userData)
+        }),
+      checkUsername: async (username) => {
+        try {
+          return await request(`/auth/username-available?username=${encodeURIComponent(username)}`);
+        } catch (err) {
+          // If unauthenticated or backend returns error, return format status
+          return { available: true };
+        }
+      },
+      requestCode: (email, purpose = 'login') =>
+        request('/auth/otp/request', {
+          method: 'POST',
+          body: JSON.stringify({ email, purpose })
+        }),
+      verifyCode: (email, code) =>
+        request('/auth/otp/verify', {
+          method: 'POST',
+          body: JSON.stringify({ email, code })
+        }),
+      resetPassword: (email, code, password) =>
+        request('/auth/reset-password', {
+          method: 'POST',
+          body: JSON.stringify({ email, code, password })
         }),
       getProfile: () => request('/profile')
     },

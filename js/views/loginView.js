@@ -56,6 +56,12 @@ const LoginView = {
               <p class="auth-subtitle">Sign in with your email, username, or registered mobile</p>
             </div>
 
+            <!-- Error Alert Banner -->
+            <div id="login-error-alert" class="auth-error-alert" style="display: none;" role="alert">
+              <span class="alert-icon">⚠️</span>
+              <span id="login-error-message">Invalid credentials</span>
+            </div>
+
             <!-- Quick Demo Fill Helpers -->
             <div class="demo-account-box">
               <div class="demo-box-header">
@@ -134,11 +140,36 @@ const LoginView = {
     const form = document.getElementById('login-form');
     const identifierInput = document.getElementById('login-identifier');
     const passwordInput = document.getElementById('login-password');
+    const rememberCheckbox = document.getElementById('login-remember');
     const togglePwdBtn = document.getElementById('btn-toggle-pwd');
     const demoFarmerBtn = document.getElementById('btn-demo-farmer');
     const demoAgronomistBtn = document.getElementById('btn-demo-agronomist');
     const forgotPwdLink = document.getElementById('link-forgot-pwd');
     const submitBtn = document.getElementById('btn-login-submit');
+    const errorAlert = document.getElementById('login-error-alert');
+    const errorMessage = document.getElementById('login-error-message');
+
+    // Restore remembered identifier if saved previously
+    const savedIdentifier = localStorage.getItem('smartkisan_remembered_identifier');
+    if (savedIdentifier && identifierInput) {
+      identifierInput.value = savedIdentifier;
+      if (rememberCheckbox) rememberCheckbox.checked = true;
+    }
+
+    const showError = (msg) => {
+      if (errorMessage) errorMessage.textContent = msg;
+      if (errorAlert) {
+        errorAlert.style.display = 'flex';
+        errorAlert.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+      if (window.showToast) {
+        window.showToast(msg, 'error');
+      }
+    };
+
+    const hideError = () => {
+      if (errorAlert) errorAlert.style.display = 'none';
+    };
 
     // Toggle Password Visibility
     if (togglePwdBtn && passwordInput) {
@@ -151,40 +182,65 @@ const LoginView = {
 
     // Demo Fill: Farmer
     if (demoFarmerBtn) {
-      demoFarmerBtn.addEventListener('click', () => {
+      demoFarmerBtn.addEventListener('click', async () => {
+        hideError();
         identifierInput.value = 'farmer.ramesh@smartkisan.in';
         passwordInput.value = 'kisan123';
-        Auth.setSession('demo-jwt-token-smartkisan-2026', {
-          id: 'user-demo-1',
-          name: 'Farmer Ramesh',
-          email: 'farmer.ramesh@smartkisan.in',
-          role: 'user'
-        });
-        window.showToast('Welcome, Farmer Ramesh! Accessing SmartKisan Dashboard...', 'success');
-        window.location.hash = '#/dashboard';
+        try {
+          submitBtn.disabled = true;
+          submitBtn.innerHTML = '<span class="auth-spinner"></span> <span>Logging in...</span>';
+          const res = await Auth.login('farmer.ramesh@smartkisan.in', 'kisan123');
+          window.showToast(`Welcome back, ${res.user.name || 'Farmer Ramesh'}!`, 'success');
+          window.location.hash = '#/dashboard';
+        } catch (err) {
+          // Fallback demo session if remote backend is cold/offline
+          Auth.setSession('demo-jwt-token-smartkisan-2026', {
+            id: 'user-demo-1',
+            name: 'Farmer Ramesh',
+            email: 'farmer.ramesh@smartkisan.in',
+            role: 'user'
+          });
+          window.showToast('Demo session activated! Welcome, Farmer Ramesh.', 'success');
+          window.location.hash = '#/dashboard';
+        } finally {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = '<span>Sign In to Dashboard</span> <span>→</span>';
+        }
       });
     }
 
     // Demo Fill: Agronomist
     if (demoAgronomistBtn) {
-      demoAgronomistBtn.addEventListener('click', () => {
+      demoAgronomistBtn.addEventListener('click', async () => {
+        hideError();
         identifierInput.value = 'agronomist.verma@smartkisan.in';
         passwordInput.value = 'agriAdmin123';
-        Auth.setSession('demo-jwt-token-agronomist-2026', {
-          id: 'user-demo-2',
-          name: 'Dr. Verma (Agronomist)',
-          email: 'agronomist.verma@smartkisan.in',
-          role: 'admin'
-        });
-        window.showToast('Welcome, Dr. Verma! Accessing Agronomy Dashboard...', 'success');
-        window.location.hash = '#/dashboard';
+        try {
+          submitBtn.disabled = true;
+          submitBtn.innerHTML = '<span class="auth-spinner"></span> <span>Logging in...</span>';
+          const res = await Auth.login('agronomist.verma@smartkisan.in', 'agriAdmin123');
+          window.showToast(`Welcome, ${res.user.name || 'Dr. Verma'}!`, 'success');
+          window.location.hash = '#/dashboard';
+        } catch (err) {
+          Auth.setSession('demo-jwt-token-agronomist-2026', {
+            id: 'user-demo-2',
+            name: 'Dr. Verma (Agronomist)',
+            email: 'agronomist.verma@smartkisan.in',
+            role: 'admin'
+          });
+          window.showToast('Agronomist demo session activated!', 'success');
+          window.location.hash = '#/dashboard';
+        } finally {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = '<span>Sign In to Dashboard</span> <span>→</span>';
+        }
       });
     }
 
     // Forgot Password Hint
     if (forgotPwdLink) {
       forgotPwdLink.addEventListener('click', () => {
-        window.showToast('For password reset, please contact SmartKisan Helpline: 1800-SMART-KISAN or use OTP on your mobile app.', 'info');
+        window.showToast('To reset password, enter your registered email on the mobile app or call SmartKisan Support: 1800-SMART-KISAN', 'info');
       });
     }
 
@@ -192,32 +248,35 @@ const LoginView = {
     if (form) {
       form.addEventListener('submit', async (e) => {
         e.preventDefault();
+        hideError();
+
         const identifier = identifierInput.value.trim();
         const password = passwordInput.value;
+        const rememberMe = rememberCheckbox ? rememberCheckbox.checked : false;
 
         if (!identifier || !password) {
-          window.showToast('Please enter both identifier and password.', 'warning');
+          showError('Please enter both your identifier (email/username) and password.');
           return;
         }
 
         try {
           submitBtn.disabled = true;
-          submitBtn.innerHTML = '<span>Verifying credentials...</span>';
+          submitBtn.innerHTML = '<span class="auth-spinner"></span> <span>Verifying credentials...</span>';
 
           const res = await Auth.login(identifier, password);
+
+          // Handle Remember Me persistence
+          if (rememberMe) {
+            localStorage.setItem('smartkisan_remembered_identifier', identifier);
+          } else {
+            localStorage.removeItem('smartkisan_remembered_identifier');
+          }
+
           window.showToast(`Welcome back, ${res.user.name || 'Farmer'}!`, 'success');
           window.location.hash = '#/dashboard';
         } catch (err) {
-          // Instant fallback so users are never stuck on verifying credentials
-          const cleanName = identifier.includes('@') ? identifier.split('@')[0] : identifier;
-          Auth.setSession('demo-jwt-token-smartkisan-2026', {
-            id: 'user-demo-fallback',
-            name: cleanName.charAt(0).toUpperCase() + cleanName.slice(1),
-            email: identifier.includes('@') ? identifier : `${identifier}@smartkisan.in`,
-            role: 'user'
-          });
-          window.showToast('Logged in successfully', 'success');
-          window.location.hash = '#/dashboard';
+          const displayErr = err.message || 'Login failed. Please check your credentials.';
+          showError(displayErr);
         } finally {
           submitBtn.disabled = false;
           submitBtn.innerHTML = '<span>Sign In to Dashboard</span> <span>→</span>';

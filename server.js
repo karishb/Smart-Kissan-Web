@@ -2,8 +2,10 @@ const http = require('http');
 const https = require('https');
 const fs = require('fs');
 const path = require('path');
+const { URL } = require('url');
 
 const PORT = process.env.PORT || 3000;
+const BACKEND_TARGET = process.env.BACKEND_API_URL || 'http://66.116.227.217:3001';
 
 const MIME_TYPES = {
   '.html': 'text/html',
@@ -19,7 +21,18 @@ const MIME_TYPES = {
 const server = http.createServer((req, res) => {
   let reqPath = req.url.split('?')[0];
 
-  // Live RMS Hardware Telemetry Proxy Endpoint
+  // Global CORS headers for API calls
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+
+  if (req.method === 'OPTIONS') {
+    res.writeHead(204);
+    res.end();
+    return;
+  }
+
+  // 1. Live RMS Hardware Telemetry Proxy Endpoint
   if (reqPath === '/api/rms-live') {
     https.get('https://rmssystem.in/CNP/load.php', {
       headers: { 'User-Agent': 'SmartKisan-Web/2.0' }
@@ -53,10 +66,7 @@ const server = http.createServer((req, res) => {
               });
             }
           }
-          res.writeHead(200, {
-            'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*'
-          });
+          res.writeHead(200, { 'Content-Type': 'application/json' });
           res.end(JSON.stringify({ success: true, count: data.length, rows: data }));
         } catch (parseErr) {
           res.writeHead(500, { 'Content-Type': 'application/json' });
@@ -70,6 +80,40 @@ const server = http.createServer((req, res) => {
     return;
   }
 
+  // 2. Reverse Proxy for Backend APIs (forwards to same API as mobile app: 66.116.227.217:3001)
+  if (reqPath.startsWith('/api/')) {
+    try {
+      const targetUrl = new URL(req.url, BACKEND_TARGET);
+      const isHttps = targetUrl.protocol === 'https:';
+      const transport = isHttps ? https : http;
+
+      const proxyReq = transport.request(targetUrl, {
+        method: req.method,
+        headers: {
+          ...req.headers,
+          host: targetUrl.host
+        }
+      }, (proxyRes) => {
+        res.writeHead(proxyRes.statusCode, proxyRes.headers);
+        proxyRes.pipe(res);
+      });
+
+      proxyReq.on('error', (err) => {
+        console.warn(`[Proxy Error] Forwarding to ${targetUrl.href} failed:`, err.message);
+        res.writeHead(502, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Backend API service offline or unreachable', details: err.message }));
+      });
+
+      req.pipe(proxyReq);
+      return;
+    } catch (e) {
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Proxy request error: ' + e.message }));
+      return;
+    }
+  }
+
+  // 3. Static File Serving
   if (reqPath === '/') reqPath = '/index.html';
 
   const filePath = path.join(__dirname, reqPath);
@@ -89,6 +133,6 @@ const server = http.createServer((req, res) => {
 
 server.listen(PORT, '0.0.0.0', () => {
   console.log(`SmartKisan Web Portal running on port ${PORT}`);
+  console.log(`Backend API Proxy target: ${BACKEND_TARGET}`);
   console.log(`Access at: http://localhost:${PORT}`);
 });
-
